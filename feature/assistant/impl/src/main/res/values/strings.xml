@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Prompts: intro suggestions (prototype SUGGEST) and price chips -->
+    <string name="assistant_prompt_spending_this_month">Where did my money go this month?</string>
+    <string name="assistant_prompt_afford_laptop">Can I afford a laptop?</string>
+    <string name="assistant_prompt_create_budget">Help me create a budget</string>
+    <string name="assistant_prompt_price_90k">KSh 90,000</string>
+    <string name="assistant_prompt_price_120k">KSh 120,000</string>
+
+    <!-- Conversation (prototype route, submitForm, cancelBudget, saved.summary) -->
+    <string name="assistant_opening_category">Opening %1$s for %2$s.</string>
+    <string name="assistant_afford_details_summary">I have %1$s set aside and can save %2$s a month.</string>
+    <string name="assistant_budget_discarded">Budget discarded. Nothing was saved.</string>
+    <string name="assistant_budget_saved_unallocated">%1$s budgeted across %2$d categories · %3$s unallocated.</string>
+    <string name="assistant_budget_saved_over_income">%1$s budgeted across %2$d categories · %3$s over income.</string>
+
+    <!-- Messages -->
+    <string name="assistant_message_switched_cloud">Switched to cloud AI.</string>
+    <string name="assistant_message_switched_on_device">Switched to on-device AI.</string>
+</resources>
