@@ -19,6 +19,8 @@ class RoborazziConventionPlugin : Plugin<Project> {
             "testImplementation"(libs.library("roborazzi"))
             "testImplementation"(libs.library("roborazzi-compose"))
             "testImplementation"(libs.library("roborazzi-junit-rule"))
+            // Espresso 3.5.x (pulled by compose ui-test) breaks on SDK 37 under Robolectric; 3.7.0 fixes it.
+            "testImplementation"(libs.library("androidx-test-espresso-core"))
         }
     }
 }
