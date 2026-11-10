@@ -2,8 +2,7 @@ package lutukai.pesalens.core.designsystem.component
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,12 +19,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -80,7 +80,7 @@ internal fun PesaAlertDialogContent(
         Modifier
             .fillMaxSize()
             .background(colors.scrim)
-            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = onDismiss)
+            .pointerInput(onDismiss) { detectTapGestures(onTap = { onDismiss() }) }
             .padding(PesaSpacing.xl),
         contentAlignment = Alignment.Center,
     ) {
@@ -88,7 +88,7 @@ internal fun PesaAlertDialogContent(
             modifier = Modifier
                 .widthIn(max = DialogMaxWidth)
                 .fillMaxWidth()
-                .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = {})
+                .pointerInput(Unit) { detectTapGestures { } }
                 .semantics { paneTitle = title },
             shape = PesaLensTheme.shapes.dialog,
             color = colors.surface,
@@ -100,7 +100,7 @@ internal fun PesaAlertDialogContent(
                 if (icon != null) {
                     Icon(icon, contentDescription = null, tint = iconTint ?: colors.accentText, modifier = Modifier.size(26.dp))
                 }
-                Text(title, style = type.titleMedium, color = colors.text)
+                Text(title, style = type.titleMedium, color = colors.text, modifier = Modifier.semantics { heading() })
                 if (subtitle != null) Text(subtitle, style = type.bodySmall.copy(lineHeight = 21.sp), color = colors.textMuted)
                 content()
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(PesaSpacing.sm, Alignment.End)) {

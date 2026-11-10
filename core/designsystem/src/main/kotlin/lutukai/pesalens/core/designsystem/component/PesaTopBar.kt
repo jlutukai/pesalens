@@ -29,7 +29,7 @@ import lutukai.pesalens.core.designsystem.icon.PesaIcons
 import lutukai.pesalens.core.designsystem.theme.PesaLensTheme
 import lutukai.pesalens.core.designsystem.theme.PesaSpacing
 
-/** 64dp top bar with a bottom 1dp border, optional 48dp back button, title, subtitle and trailing actions. */
+/** 64dp top bar (backContentDescription is mandatory when onBack is set) with a bottom 1dp border, optional 48dp back button, title, subtitle and trailing actions. */
 @Composable
 fun PesaTopBar(
     title: String,
@@ -39,6 +39,7 @@ fun PesaTopBar(
     backContentDescription: String? = null,
     actions: @Composable RowScope.() -> Unit = {},
 ) {
+    require(onBack == null || backContentDescription != null) { "backContentDescription is required when onBack is set" }
     val colors = PesaLensTheme.colors
     val borderColor = colors.border
     Row(

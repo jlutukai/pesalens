@@ -12,6 +12,11 @@ import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.isDialog
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -19,6 +24,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 import lutukai.pesalens.core.designsystem.icon.PesaIcons
 import lutukai.pesalens.core.designsystem.theme.PesaLensTheme
@@ -96,5 +102,45 @@ class ContainersSemanticsTest {
             SemanticsMatcher.expectValue(SemanticsProperties.LiveRegion, LiveRegionMode.Polite),
         )
         composeRule.onNodeWithText("Static note").assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.LiveRegion))
+    }
+
+    @Test
+    fun topBar_backWithoutDescription_throws() {
+        assertFailsWith<IllegalArgumentException> {
+            composeRule.setContent { PesaLensTheme(darkTheme = false) { PesaTopBar("Food", onBack = {}) } }
+            composeRule.waitForIdle()
+        }
+    }
+
+    private fun setDialog(onDismiss: () -> Unit) = composeRule.setContent {
+        PesaLensTheme(darkTheme = false) {
+            PesaAlertDialog(
+                title = "Reset sample data?",
+                onDismiss = onDismiss,
+                confirm = { PesaButton("Confirm", {}) },
+                dismiss = { PesaButton("Cancel", {}) },
+                icon = PesaIcons.ArrowCounterClockwise,
+                subtitle = "Body copy",
+            )
+        }
+    }
+
+    @Test
+    fun alertDialog_titleAndBody_areSeparateReadableNodes_noEmptyClickAction() {
+        setDialog {}
+        composeRule.onNodeWithText("Reset sample data?").assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading))
+        composeRule.onNodeWithText("Body copy").assertIsDisplayed()
+        composeRule.onAllNodes(hasClickAction()).assertCountEquals(2)
+    }
+
+    @Test
+    fun alertDialog_tapOnScrim_dismisses_tapInside_doesNot() {
+        var dismissed = 0
+        setDialog { dismissed++ }
+        composeRule.onNodeWithText("Body copy").performClick()
+        assertEquals(0, dismissed)
+        composeRule.onNode(isDialog()).performTouchInput { click(Offset(4f, 4f)) }
+        composeRule.waitForIdle()
+        assertTrue(dismissed >= 1, "scrim tap should dismiss")
     }
 }
