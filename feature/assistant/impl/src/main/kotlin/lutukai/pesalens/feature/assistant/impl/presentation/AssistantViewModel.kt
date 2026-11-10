@@ -69,13 +69,18 @@ class AssistantViewModel(
     private val messages: UserMessageSink,
     private val clock: Clock,
     private val timeZone: TimeZone,
-) : MviViewModel<AssistantUiState, AssistantIntent, AssistantEffect>(AssistantUiState()) {
+) : MviViewModel<AssistantUiState, AssistantIntent, AssistantEffect>(
+    AssistantUiState(currentMonth = clock.currentMonth(timeZone)),
+) {
 
     /** A sent question: what the user bubble shows and what the interpreter receives. */
     private data class Question(val text: UiText, val query: String)
 
     private var loadJob: Job? = null
     private var requestJob: Job? = null
+
+    /** Bumped per request and on clear, so a cancelled request's cleanup never touches a newer one's state. */
+    private var requestGeneration = 0
     private var modeJob: Job? = null
     private var lastItemId = 0L
     private var awaitingPrice = false
@@ -86,7 +91,7 @@ class AssistantViewModel(
         is AssistantIntent.DraftChanged -> reduce { copy(draft = intent.text) }
         AssistantIntent.Send -> send()
         is AssistantIntent.SuggestionTapped -> suggestion(intent.s)
-        is AssistantIntent.OpenCategory -> emit(AssistantEffect.OpenCategory(intent.categoryId, currentMonth()))
+        is AssistantIntent.OpenCategory -> emit(AssistantEffect.OpenCategory(intent.categoryId, intent.month))
         is AssistantIntent.FormAvailable -> editForm(intent.id) {
             val available = intent.digits.toAmountDigits()
             copy(available = available, availableMissing = availableMissing && available.isEmpty())
@@ -120,8 +125,12 @@ class AssistantViewModel(
         AssistantIntent.OpenSettings -> emit(AssistantEffect.OpenSettings)
     }
 
-    /** Collects mode, model readiness and conversation clears once, however often the screen re-enters. */
+    /**
+     * Refreshes [AssistantUiState.currentMonth] on every entry, then collects mode, model readiness and conversation
+     * clears once, however often the screen re-enters.
+     */
     private fun load() {
+        reduce { copy(currentMonth = currentMonth()) }
         if (loadJob != null) return
         loadJob = viewModelScope.launch {
             launch {
@@ -137,6 +146,7 @@ class AssistantViewModel(
 
     /** Drops every item and any reply still in flight. Item ids keep counting up, so none is ever reused. */
     private fun clearConversation() {
+        requestGeneration++
         requestJob?.cancel()
         requestJob = null
         awaitingPrice = false
@@ -169,16 +179,26 @@ class AssistantViewModel(
     /**
      * Prototype respond: marks [AssistantUiState.busy], shows a Thinking item ([label], or who interprets in the
      * current mode when null), then swaps it for the replies [build] returns. The mode is read from the repository
-     * so a request made before the first settings emission still uses the stored mode.
+     * so a request made before the first settings emission still uses the stored mode. Thinking is removed and busy
+     * cleared even if [build] throws; a request dropped by a conversation clear leaves the state to the clear.
      */
     private fun respond(label: ThinkingLabel?, build: suspend (AssistantMode) -> List<ChatItem>) {
         reduce { copy(busy = true) }
+        val generation = ++requestGeneration
         requestJob = viewModelScope.launch {
-            val mode = settings.settings.first().assistantMode
-            val thinking = ChatItem.Thinking(nextId(), label ?: mode.thinkingLabel())
-            append(thinking)
-            val replies = build(mode)
-            reduce { copy(items = (items.filterNot { it.id == thinking.id } + replies).toImmutableList(), busy = false) }
+            var thinkingId: Long? = null
+            var replies = emptyList<ChatItem>()
+            try {
+                val mode = settings.settings.first().assistantMode
+                val thinking = ChatItem.Thinking(nextId(), label ?: mode.thinkingLabel())
+                thinkingId = thinking.id
+                append(thinking)
+                replies = build(mode)
+            } finally {
+                if (generation == requestGeneration) {
+                    reduce { copy(items = (items.filterNot { it.id == thinkingId } + replies).toImmutableList(), busy = false) }
+                }
+            }
         }
     }
 
@@ -248,7 +268,7 @@ class AssistantViewModel(
         if (currentState.busy) return
         when (s) {
             is Suggestion.Ask -> ask(s.prompt)
-            is Suggestion.OpenCategory -> emit(AssistantEffect.OpenCategory(s.categoryId, currentMonth()))
+            is Suggestion.OpenCategory -> emit(AssistantEffect.OpenCategory(s.categoryId, s.month))
             Suggestion.TrySaving15k -> {
                 val latest = currentState.items.filterIsInstance<ChatItem.AffordabilityResult>().lastOrNull() ?: return
                 editResult(latest.id) { recalculate(monthly = Money.kes(TrySavingMonthly)) }
@@ -307,13 +327,19 @@ class AssistantViewModel(
 
     // ---- Budget ----
 
-    /** Edits apply only to a draft; totals are recomputed after every change. */
-    private fun editBudget(id: Long, change: BudgetUi.() -> BudgetUi) = editItem<ChatItem.Budget>(id) {
-        if (ui.status != BudgetStatus.Draft) {
-            this
-        } else {
-            val edited = ui.change()
-            copy(ui = edited.copy(totals = BudgetCalculator.totals(edited.income, edited.lines.map { it.limit })))
+    /**
+     * Edits apply only to a draft and never while busy, so a budget being saved can't change under the save. Totals
+     * are recomputed after every change.
+     */
+    private fun editBudget(id: Long, change: BudgetUi.() -> BudgetUi) {
+        if (currentState.busy) return
+        editItem<ChatItem.Budget>(id) {
+            if (ui.status != BudgetStatus.Draft) {
+                this
+            } else {
+                val edited = ui.change()
+                copy(ui = edited.copy(totals = BudgetCalculator.totals(edited.income, edited.lines.map { it.limit })))
+            }
         }
     }
 
@@ -322,13 +348,17 @@ class AssistantViewModel(
         return copy(lines = lines.mapIndexed { i, line -> if (i == index) line.copy(limit = change(line.limit)) else line }.toImmutableList())
     }
 
+    /** Ignored while busy: a budget being saved can't also be discarded. */
     private fun cancelBudget(id: Long) {
+        if (currentState.busy) return
         val budget = findItem<ChatItem.Budget>(id)?.takeIf { it.ui.status == BudgetStatus.Draft } ?: return
         editItem<ChatItem.Budget>(id) { copy(ui = ui.copy(status = BudgetStatus.Discarded)) }
         append(ChatItem.AssistantText(nextId(), budget.mode, UiText.Res(R.string.assistant_budget_discarded), afterCancel = true))
     }
 
+    /** Opens the review dialog for a draft; ignored while busy, so a budget being saved can't be confirmed again. */
     private fun reviewBudget(id: Long) {
+        if (currentState.busy) return
         if (findItem<ChatItem.Budget>(id)?.ui?.status != BudgetStatus.Draft) return
         reduce { copy(dialog = AssistantDialog.ReviewBudget(id)) }
     }
@@ -402,10 +432,14 @@ class AssistantViewModel(
         copy(items = items.map { if (it.id == id && it is T) it.change() else it }.toImmutableList())
     }
 
-    private fun today(): LocalDate = clock.now().toLocalDateTime(timeZone).date
+    private fun today(): LocalDate = clock.today(timeZone)
 
-    private fun currentMonth(): YearMonth = today().let { YearMonth(it.year, it.month) }
+    private fun currentMonth(): YearMonth = clock.currentMonth(timeZone)
 }
+
+private fun Clock.today(timeZone: TimeZone): LocalDate = now().toLocalDateTime(timeZone).date
+
+private fun Clock.currentMonth(timeZone: TimeZone): YearMonth = today(timeZone).let { YearMonth(it.year, it.month) }
 
 private fun AssistantMode.thinkingLabel(): ThinkingLabel = when (this) {
     AssistantMode.Cloud -> ThinkingLabel.AskingCloud

@@ -20,8 +20,10 @@ import lutukai.pesalens.core.ui.text.UiText
 import lutukai.pesalens.feature.assistant.impl.R
 import lutukai.pesalens.feature.modelsetup.api.ModelSetupOrigin
 
+/** [currentMonth] is today's month from the injected clock, e.g. for the no-data notice's "Show November 2026". */
 @Immutable
 data class AssistantUiState(
+    val currentMonth: YearMonth,
     val mode: AssistantMode = AssistantMode.Cloud,
     val modelReady: Boolean = false,
     val items: ImmutableList<ChatItem> = persistentListOf(),
@@ -94,7 +96,8 @@ enum class Prompt(@StringRes val label: Int, val query: String) {
 sealed interface Suggestion {
     data class Ask(val prompt: Prompt) : Suggestion
 
-    data class OpenCategory(val categoryId: String, val label: String) : Suggestion
+    /** [month] is the month of the spending answer the chip follows. */
+    data class OpenCategory(val categoryId: String, val label: String, val month: YearMonth) : Suggestion
 
     data object TrySaving15k : Suggestion
 }
@@ -120,7 +123,8 @@ sealed interface AssistantIntent : UiIntent {
     data class DraftChanged(val text: String) : AssistantIntent
     data object Send : AssistantIntent
     data class SuggestionTapped(val s: Suggestion) : AssistantIntent
-    data class OpenCategory(val categoryId: String) : AssistantIntent
+    /** A category row tapped on a spending card; [month] is that card's month. */
+    data class OpenCategory(val categoryId: String, val month: YearMonth) : AssistantIntent
     data class FormAvailable(val id: Long, val digits: String) : AssistantIntent
     data class FormMonthly(val id: Long, val digits: String) : AssistantIntent
     data class UseSampleValues(val id: Long) : AssistantIntent

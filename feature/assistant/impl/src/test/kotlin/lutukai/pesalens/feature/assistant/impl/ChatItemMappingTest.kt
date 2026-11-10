@@ -74,6 +74,14 @@ class ChatItemMappingTest {
     }
 
     @Test
+    fun suggestionsAfter_spending_carriesSpendingMonth() {
+        val september = YearMonth(2026, 9)
+        val spending = SampleFinance.november.copy(month = september).toUi()
+        val chips = suggestionsAfter(ChatItem.SpendingResult(1, cloud, spending, spending.categories[1]))
+        assertEquals(Suggestion.OpenCategory("food", "Food and groceries", september), chips.first())
+    }
+
+    @Test
     fun noticeActions_table() {
         val askAgain = NoticeAction.AskAgain
         val rows: List<Pair<Triple<NoticeKind, AssistantMode, Boolean>, List<NoticeAction>>> = buildList {
@@ -116,7 +124,7 @@ class ChatItemMappingTest {
         val rows: List<Pair<ChatItem, List<Suggestion>>> = buildList {
             add(
                 ChatItem.SpendingResult(1, cloud, spending, spending.categories[1]) to listOf(
-                    Suggestion.OpenCategory("food", "Food and groceries"),
+                    Suggestion.OpenCategory("food", "Food and groceries", november),
                     Suggestion.Ask(Prompt.CreateBudget),
                     Suggestion.Ask(Prompt.AffordLaptop),
                 ),

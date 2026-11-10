@@ -2,9 +2,12 @@ package lutukai.pesalens.feature.assistant.impl
 
 import app.cash.turbine.test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.days
+import kotlin.time.Instant
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.Flow
@@ -570,6 +573,60 @@ class AssistantViewModelTest {
     }
 
     @Test
+    fun cancelBudget_duringSave_isIgnored() = runTest {
+        val gated = GatedFinance(finance)
+        val vm = vm(finance = gated)
+        val budget = vm.openBudget()
+        vm.onIntent(AssistantIntent.ReviewBudget(budget.id))
+        vm.onIntent(AssistantIntent.ConfirmSave)
+
+        vm.onIntent(AssistantIntent.CancelBudget(budget.id))
+        vm.onIntent(AssistantIntent.ReviewBudget(budget.id))
+        assertEquals(BudgetStatus.Draft, vm.budget(budget.id).ui.status)
+        assertEquals(AssistantDialog.None, vm.state.value.dialog)
+
+        gated.gate.complete(Unit)
+        assertEquals(BudgetStatus.Saved, vm.budget(budget.id).ui.status)
+        assertEquals(listOf(ChatItem.User::class, ChatItem.Budget::class, ChatItem.BudgetSaved::class), vm.items.map { it::class })
+    }
+
+    @Test
+    fun lineChanged_duringSave_isIgnored() = runTest {
+        val gated = GatedFinance(finance)
+        val vm = vm(finance = gated)
+        val budget = vm.openBudget()
+        vm.onIntent(AssistantIntent.ReviewBudget(budget.id))
+        vm.onIntent(AssistantIntent.ConfirmSave)
+
+        vm.onIntent(AssistantIntent.LineChanged(budget.id, 0, "1"))
+        vm.onIntent(AssistantIntent.LineStep(budget.id, 1, StepDirection.Up))
+        vm.onIntent(AssistantIntent.IncomeChanged(budget.id, "1"))
+        assertEquals(SampleFinance.draft.toUi(BudgetStatus.Draft), vm.budget(budget.id).ui)
+
+        gated.gate.complete(Unit)
+        assertEquals(SampleFinance.draft.toUi(BudgetStatus.Saved), vm.budget(budget.id).ui)
+        assertEquals(listOf(SampleFinance.draft), finance.savedDrafts)
+        assertEquals(listOf(ChatItem.User::class, ChatItem.Budget::class, ChatItem.BudgetSaved::class), vm.items.map { it::class })
+    }
+
+    @Test
+    fun send_interpreterThrows_stillClearsThinkingAndBusy() {
+        val throwing = object : IntentInterpreter {
+            override suspend fun interpret(text: String, mode: AssistantMode): Interpretation = error("boom")
+        }
+        val vm = vm(interpreter = throwing)
+        // The exception still escapes to the ViewModel scope, which runTest reports once the body has run.
+        val thrown = assertFailsWith<IllegalStateException> {
+            runTest {
+                vm.send("Where did my money go this month?")
+                assertEquals(false, vm.state.value.busy)
+                assertEquals(listOf(ChatItem.User::class), vm.items.map { it::class })
+            }
+        }
+        assertEquals("boom", thrown.message)
+    }
+
+    @Test
     fun confirmSave_withoutDialog_doesNothing() = runTest {
         val vm = vm()
         vm.openBudget()
@@ -731,14 +788,52 @@ class AssistantViewModelTest {
     }
 
     @Test
-    fun openCategory_suggestionAndRow_emitCurrentMonth() = runTest {
+    fun openCategory_fromSpendingResult_usesResultMonth() = runTest {
+        val september = YearMonth(2026, 9)
+        interpreter.next = Interpretation.Spending(september)
+        finance.spendingResult = AppResult.Success(SampleFinance.november.copy(month = september))
         val vm = vm()
+        vm.send("Where did my money go in September?")
+        val result = vm.last<ChatItem.SpendingResult>()
+        val chip = suggestionsAfter(result).first()
+        assertEquals(Suggestion.OpenCategory("food", "Food and groceries", september), chip)
         vm.effects.test {
-            vm.onIntent(AssistantIntent.SuggestionTapped(Suggestion.OpenCategory("food", "Food and groceries")))
-            assertEquals(AssistantEffect.OpenCategory("food", november), awaitItem())
-            vm.onIntent(AssistantIntent.OpenCategory("rent"))
-            assertEquals(AssistantEffect.OpenCategory("rent", november), awaitItem())
+            vm.onIntent(AssistantIntent.SuggestionTapped(chip))
+            assertEquals(AssistantEffect.OpenCategory("food", september), awaitItem())
+            vm.onIntent(AssistantIntent.OpenCategory("rent", result.spending.month))
+            assertEquals(AssistantEffect.OpenCategory("rent", september), awaitItem())
         }
+    }
+
+    // ---- Current month ----
+
+    @Test
+    fun noData_state_carriesCurrentMonth() = runTest {
+        val march = YearMonth(2026, 3)
+        interpreter.next = Interpretation.Spending(march)
+        finance.spendingResult = AppResult.Success(SampleFinance.november.copy(month = march, categories = emptyList()))
+        val vm = vm()
+        vm.send("Where did my money go in March?")
+        assertEquals(march, vm.last<ChatItem.Notice>().month)
+        assertEquals(november, vm.state.value.currentMonth)
+    }
+
+    @Test
+    fun currentMonth_setBeforeLoad_andRefreshedByLoad() = runTest {
+        val vm = AssistantViewModel(interpreter, finance, settings, models, conversation, messages, clock, TimeZone.UTC)
+        assertEquals(november, vm.state.value.currentMonth)
+        clock.advanceBy(25.days) // 2026-12-05
+        vm.onIntent(AssistantIntent.Load)
+        assertEquals(YearMonth(2026, 12), vm.state.value.currentMonth)
+    }
+
+    @Test
+    fun currentMonth_usesInjectedTimeZone() = runTest {
+        clock.now = Instant.parse("2026-11-30T22:00:00Z") // already 1 December in Nairobi (UTC+3)
+        val nairobi = AssistantViewModel(interpreter, finance, settings, models, conversation, messages, clock, TimeZone.of("Africa/Nairobi"))
+        assertEquals(YearMonth(2026, 12), nairobi.state.value.currentMonth)
+        val utc = AssistantViewModel(interpreter, finance, settings, models, conversation, messages, clock, TimeZone.UTC)
+        assertEquals(november, utc.state.value.currentMonth)
     }
 
     @Test

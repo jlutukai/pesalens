@@ -70,7 +70,7 @@ internal fun BudgetUi.savedSummary(): UiText = if (totals.isOver) {
 /** Follow-up chips for [item] (prototype renderVals). The screen shows them only under the last non-user item. */
 fun suggestionsAfter(item: ChatItem): ImmutableList<Suggestion> = when (item) {
     is ChatItem.SpendingResult -> listOfNotNull(
-        item.focus?.let { Suggestion.OpenCategory(it.id, it.label) },
+        item.focus?.let { Suggestion.OpenCategory(it.id, it.label, item.spending.month) },
         Suggestion.Ask(Prompt.CreateBudget),
         Suggestion.Ask(Prompt.AffordLaptop),
     ).toImmutableList()
