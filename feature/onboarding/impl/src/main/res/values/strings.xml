@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="welcome_brand">PesaLens</string>
+    <string name="welcome_headline">Understand your money, one question at a time</string>
+    <string name="welcome_body">Starts with sample data. No account needed.</string>
+    <string name="welcome_get_started">Get started</string>
+    <string name="welcome_use_on_device">Use on-device AI instead</string>
+
+    <string name="welcome_preview_question">Where did my money go this month?</string>
+    <string name="welcome_preview_period">November 2026 · sample</string>
+    <string name="welcome_preview_rent">Rent</string>
+    <string name="welcome_preview_rent_amount">KSh 25,000</string>
+    <string name="welcome_preview_food">Food and groceries</string>
+    <string name="welcome_preview_food_amount">KSh 15,000</string>
+
+    <string name="consent_title">Use cloud AI?</string>
+    <string name="consent_body">A cloud AI provider interprets your questions. PesaLens still calculates every figure on this phone.</string>
+    <string name="consent_sent"><b>Sent:</b> your typed question, the month and category totals</string>
+    <string name="consent_not_sent"><b>Not sent:</b> individual transactions or saved budgets</string>
+    <string name="consent_needs_internet">Needs an internet connection. Switch to on-device AI any time in Settings.</string>
+    <string name="consent_not_now">Not now</string>
+    <string name="consent_agree">Agree and continue</string>
+</resources>
