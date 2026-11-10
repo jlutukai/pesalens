@@ -5,6 +5,8 @@ import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
+import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -47,29 +49,57 @@ fun PesaLensTheme(darkTheme: Boolean, content: @Composable () -> Unit) {
     }
 }
 
-private fun PesaColors.toColorScheme() = lightColorScheme(
-    primary = accent,
-    onPrimary = background,
-    primaryContainer = tintSubtle,
-    onPrimaryContainer = accentText,
-    secondaryContainer = tint,
-    onSecondaryContainer = accentText,
-    background = background,
-    surface = surface,
-    surfaceContainer = surface,
-    surfaceContainerHigh = surface,
-    surfaceContainerLow = surfaceAlt,
-    onSurface = text,
-    onBackground = text,
-    onSurfaceVariant = textMuted,
-    outline = border,
-    outlineVariant = border,
-    inverseSurface = text,
-    inverseOnSurface = background,
-    error = warnText,
-    errorContainer = warnBackground,
-    scrim = scrim,
-)
+internal fun PesaColors.toColorScheme(): ColorScheme = if (isDark) {
+    darkColorScheme(
+        primary = accent,
+        onPrimary = background,
+        primaryContainer = tintSubtle,
+        onPrimaryContainer = accentText,
+        secondaryContainer = tint,
+        onSecondaryContainer = accentText,
+        background = background,
+        surface = surface,
+        surfaceContainer = surface,
+        surfaceContainerHigh = surface,
+        surfaceContainerLow = surfaceAlt,
+        onSurface = text,
+        onBackground = text,
+        onSurfaceVariant = textMuted,
+        outline = border,
+        outlineVariant = border,
+        inverseSurface = text,
+        inverseOnSurface = background,
+        error = warnText,
+        onError = warnBackground,
+        errorContainer = warnBackground,
+        scrim = scrim,
+    )
+} else {
+    lightColorScheme(
+        primary = accent,
+        onPrimary = background,
+        primaryContainer = tintSubtle,
+        onPrimaryContainer = accentText,
+        secondaryContainer = tint,
+        onSecondaryContainer = accentText,
+        background = background,
+        surface = surface,
+        surfaceContainer = surface,
+        surfaceContainerHigh = surface,
+        surfaceContainerLow = surfaceAlt,
+        onSurface = text,
+        onBackground = text,
+        onSurfaceVariant = textMuted,
+        outline = border,
+        outlineVariant = border,
+        inverseSurface = text,
+        inverseOnSurface = background,
+        error = warnText,
+        onError = warnBackground,
+        errorContainer = warnBackground,
+        scrim = scrim,
+    )
+}
 
 private fun PesaType.toTypography() = Typography(
     displayLarge = display,
