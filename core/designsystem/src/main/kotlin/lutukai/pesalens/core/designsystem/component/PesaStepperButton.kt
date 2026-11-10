@@ -29,6 +29,7 @@ fun PesaStepperButton(
     enabled: Boolean = true,
     width: Dp = 48.dp,
     shape: Shape = PesaLensTheme.shapes.button,
+    containerColor: Color = Color.Transparent,
 ) {
     val colors = PesaLensTheme.colors
     // The visual is [width] x 48; the layout box is at least 48dp wide so the touch target never
@@ -43,9 +44,9 @@ fun PesaStepperButton(
             enabled = enabled,
             shapes = IconButtonDefaults.shapes(shape = shape, pressedShape = RoundedCornerShape(6.dp)),
             colors = IconButtonDefaults.outlinedIconButtonColors(
-                containerColor = Color.Transparent,
+                containerColor = containerColor,
                 contentColor = colors.text,
-                disabledContainerColor = Color.Transparent,
+                disabledContainerColor = containerColor,
                 disabledContentColor = colors.text.copy(alpha = 0.45f),
             ),
             border = BorderStroke(1.dp, if (enabled) colors.border else colors.border.copy(alpha = 0.45f)),

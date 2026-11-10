@@ -13,15 +13,19 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import lutukai.pesalens.core.designsystem.theme.PesaLensTheme
 import lutukai.pesalens.core.designsystem.theme.PesaSpacing
@@ -41,33 +45,36 @@ fun PesaAmountField(
     contentDescription: String? = null,
     textAlign: TextAlign = TextAlign.Start,
     prefix: String? = "KSh",
+    containerColor: Color = PesaLensTheme.colors.surface,
+    shape: Shape = PesaLensTheme.shapes.input,
+    horizontalPadding: Dp = 14.dp,
+    textStyle: TextStyle = PesaLensTheme.type.body,
+    prefixStyle: TextStyle = PesaLensTheme.type.body,
 ) {
     val colors = PesaLensTheme.colors
-    val type = PesaLensTheme.type
-    val shape = PesaLensTheme.shapes.input
-    val borderColor = if (isError) colors.warnText else colors.border
+    val borderColor = if (isError) colors.warnBorder else colors.border
     BasicTextField(
         value = value,
         onValueChange = { raw -> onValueChange(raw.filter { it in '0'..'9' }) },
         modifier = modifier
             .fillMaxWidth()
             .height(PesaSpacing.minTouchTarget)
-            .background(colors.surface, shape)
+            .background(containerColor, shape)
             .border(1.dp, borderColor, shape)
             .then(if (contentDescription != null) Modifier.semantics { this.contentDescription = contentDescription } else Modifier),
         enabled = enabled,
-        textStyle = type.body.copy(color = colors.text, textAlign = textAlign),
+        textStyle = textStyle.copy(color = colors.text, textAlign = textAlign),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         singleLine = true,
         visualTransformation = ThousandsGrouping,
         cursorBrush = SolidColor(colors.accent),
         decorationBox = { inner ->
             Row(
-                Modifier.padding(horizontal = 14.dp),
+                Modifier.padding(horizontal = horizontalPadding),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 if (prefix != null) {
-                    Text(prefix, style = type.body, color = colors.textMuted, modifier = Modifier.padding(end = PesaSpacing.sm))
+                    Text(prefix, style = prefixStyle, color = colors.textMuted, modifier = Modifier.padding(end = PesaSpacing.sm))
                 }
                 Box(
                     Modifier.weight(1f),
@@ -76,7 +83,7 @@ fun PesaAmountField(
                     if (value.isEmpty()) {
                         Text(
                             placeholder,
-                            style = type.body,
+                            style = textStyle,
                             color = colors.textMuted,
                             textAlign = textAlign,
                             modifier = Modifier.fillMaxWidth(),

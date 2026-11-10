@@ -2,14 +2,24 @@ package lutukai.pesalens.core.ui.preview
 
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.YearMonth
+import kotlinx.datetime.plus
+import lutukai.pesalens.core.model.AffordabilityOutcome
+import lutukai.pesalens.core.model.BudgetTotals
 import lutukai.pesalens.core.model.Category
 import lutukai.pesalens.core.model.CategorySpend
 import lutukai.pesalens.core.model.Money
+import lutukai.pesalens.core.ui.catalog.model.AffordabilityFormUi
+import lutukai.pesalens.core.ui.catalog.model.AffordabilityUi
+import lutukai.pesalens.core.ui.catalog.model.BudgetLineUi
+import lutukai.pesalens.core.ui.catalog.model.BudgetStatus
+import lutukai.pesalens.core.ui.catalog.model.BudgetUi
 import lutukai.pesalens.core.ui.catalog.model.CategorySpendUi
 import lutukai.pesalens.core.ui.catalog.model.SpendingUi
 import lutukai.pesalens.core.ui.catalog.model.TransactionUi
 import lutukai.pesalens.core.ui.catalog.model.TxIcon
+import lutukai.pesalens.core.ui.catalog.model.monthBlocks
 
 /** Sample data for `@Preview`s only (November 2026, from the prototype). Never reference from runtime code. */
 object PreviewFixtures {
@@ -90,4 +100,69 @@ object PreviewFixtures {
         .toImmutableList()
 
     private const val NOVEMBER_TOTAL_SHILLINGS = 65_000L
+
+    /** Prototype `AFFORD0()`: price 90,000, 30,000 set aside, 10,000 a month. */
+    fun affordability(priceShillings: Long = 90_000, availableShillings: Long = 30_000, monthlyShillings: Long = 10_000): AffordabilityUi {
+        val remaining = maxOf(priceShillings - availableShillings, 0L)
+        val outcome = when {
+            remaining == 0L -> AffordabilityOutcome.Covered
+            monthlyShillings <= 0L -> AffordabilityOutcome.NoEndDate(Money.kes(remaining))
+            else -> {
+                val months = ((remaining + monthlyShillings - 1) / monthlyShillings).toInt()
+                AffordabilityOutcome.OnTrack(months, Money.kes(remaining), month.plus(months, DateTimeUnit.MONTH))
+            }
+        }
+        val percent = if (priceShillings > 0) (minOf(availableShillings, priceShillings) * 100 + priceShillings / 2) / priceShillings else 0L
+        return AffordabilityUi(
+            price = Money.kes(priceShillings),
+            available = Money.kes(availableShillings),
+            monthly = Money.kes(monthlyShillings),
+            outcome = outcome,
+            percentSetAside = percent.toInt(),
+            monthBlocks = monthBlocks(month, (outcome as? AffordabilityOutcome.OnTrack)?.months ?: 0),
+        )
+    }
+
+    fun affordabilityForm(
+        available: String = "",
+        monthly: String = "",
+        tried: Boolean = false,
+        submitted: Boolean = false,
+    ) = AffordabilityFormUi(
+        price = Money.kes(90_000),
+        available = available,
+        monthly = monthly,
+        availableMissing = tried && available.isEmpty() && !submitted,
+        monthlyMissing = tried && monthly.isEmpty() && !submitted,
+        submitted = submitted,
+    )
+
+    /** Prototype `BUDGET0()`: income 100,000 and six limits totalling 75,000 (unallocated 25,000). */
+    fun budget(
+        incomeShillings: Long = 100_000,
+        status: BudgetStatus = BudgetStatus.Draft,
+        limitsShillings: List<Long> = listOf(25_000, 15_000, 10_000, 7_000, 8_000, 10_000),
+    ): BudgetUi {
+        val lines = novemberCategories.mapIndexed { i, c ->
+            BudgetLineUi(c.category.id, c.category.label, c.category.tone, Money.kes(limitsShillings[i]))
+        }
+        val total = limitsShillings.sum()
+        val difference = incomeShillings - total
+        return BudgetUi(
+            month = month,
+            income = Money.kes(incomeShillings),
+            lines = lines.toImmutableList(),
+            totals = BudgetTotals(
+                total = Money.kes(total),
+                difference = Money.kes(difference),
+                isOver = difference < 0,
+                allocatedRatio = if (incomeShillings > 0) minOf(total.toFloat() / incomeShillings, 1f) else 1f,
+            ),
+            status = status,
+        )
+    }
+
+    /** The same six categories with limits 10,000 over a 100,000 income. */
+    fun overBudget(status: BudgetStatus = BudgetStatus.Draft): BudgetUi =
+        budget(status = status, limitsShillings = listOf(30_000, 20_000, 10_000, 15_000, 20_000, 15_000))
 }
