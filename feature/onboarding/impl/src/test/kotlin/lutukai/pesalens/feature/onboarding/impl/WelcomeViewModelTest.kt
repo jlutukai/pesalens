@@ -2,7 +2,10 @@ package lutukai.pesalens.feature.onboarding.impl
 
 import app.cash.turbine.test
 import kotlin.test.assertEquals
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.onStart
+import lutukai.pesalens.core.domain.repository.SettingsRepository
 import kotlinx.coroutines.test.runTest
 import lutukai.pesalens.core.model.AppSettings
 import lutukai.pesalens.core.model.AssistantMode
@@ -49,5 +52,40 @@ class WelcomeViewModelTest {
             vm.onIntent(WelcomeIntent.UseOnDeviceInstead)
             assertEquals(WelcomeEffect.OpenModelSetup, awaitItem())
         }
+    }
+
+    @Test
+    fun getStarted_beforeLoad_withConsent_opensLockSetup() = runTest {
+        val vm = WelcomeViewModel(FakeSettingsRepository(AppSettings(cloudConsentGiven = true)))
+        vm.effects.test {
+            vm.onIntent(WelcomeIntent.GetStarted)
+            assertEquals(WelcomeEffect.OpenAppLockSetup, awaitItem())
+        }
+    }
+
+    @Test
+    fun load_twice_collectsOnce() = runTest {
+        val counting = CountingSettings(FakeSettingsRepository())
+        val vm = WelcomeViewModel(counting)
+        vm.onIntent(WelcomeIntent.Load)
+        vm.onIntent(WelcomeIntent.Load)
+        assertEquals(1, counting.subscriptions)
+    }
+
+    @Test
+    fun getStarted_doubleTap_withConsent_emitsSingleEffect() = runTest {
+        val vm = WelcomeViewModel(FakeSettingsRepository(AppSettings(cloudConsentGiven = true)))
+        vm.effects.test {
+            vm.onIntent(WelcomeIntent.GetStarted)
+            vm.onIntent(WelcomeIntent.GetStarted)
+            assertEquals(WelcomeEffect.OpenAppLockSetup, awaitItem())
+            expectNoEvents()
+        }
+    }
+
+    private class CountingSettings(private val delegate: FakeSettingsRepository) : SettingsRepository by delegate {
+        var subscriptions = 0
+            private set
+        override val settings: Flow<AppSettings> = delegate.settings.onStart { subscriptions++ }
     }
 }

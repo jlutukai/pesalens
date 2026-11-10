@@ -56,4 +56,25 @@ class CloudConsentViewModelTest {
         }
         assertEquals(false, settings.settings.first().cloudConsentGiven)
     }
+
+    @Test
+    fun agree_fromModelSetup_continuesOnboarding() = runTest {
+        val vm = CloudConsentViewModel(ConsentOrigin.ModelSetup, FakeSettingsRepository())
+        vm.effects.test {
+            vm.onIntent(CloudConsentIntent.Agree)
+            assertEquals(CloudConsentEffect.ContinueOnboarding, awaitItem())
+        }
+    }
+
+    @Test
+    fun agree_doubleTap_emitsSingleEffect() = runTest {
+        val vm = CloudConsentViewModel(ConsentOrigin.Settings, FakeSettingsRepository())
+        vm.effects.test {
+            vm.onIntent(CloudConsentIntent.Agree)
+            vm.onIntent(CloudConsentIntent.Agree)
+            vm.onIntent(CloudConsentIntent.NotNow)
+            assertEquals(CloudConsentEffect.Close, awaitItem())
+            expectNoEvents()
+        }
+    }
 }

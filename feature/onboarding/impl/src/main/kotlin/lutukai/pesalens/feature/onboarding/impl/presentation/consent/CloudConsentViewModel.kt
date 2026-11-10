@@ -12,12 +12,23 @@ class CloudConsentViewModel(
     private val settings: SettingsRepository,
 ) : MviViewModel<CloudConsentUiState, CloudConsentIntent, CloudConsentEffect>(CloudConsentUiState) {
 
+    private var finished = false
+
     override fun handleIntent(intent: CloudConsentIntent) = when (intent) {
         CloudConsentIntent.Agree -> agree()
-        CloudConsentIntent.NotNow -> emit(CloudConsentEffect.Close)
+        CloudConsentIntent.NotNow -> finish(CloudConsentEffect.Close)
+    }
+
+    /** The sheet is dismissed after one navigation effect; further taps (double tap) are ignored. */
+    private fun finish(effect: CloudConsentEffect) {
+        if (finished) return
+        finished = true
+        emit(effect)
     }
 
     private fun agree() {
+        if (finished) return
+        finished = true
         viewModelScope.launch {
             settings.giveCloudConsent()
             settings.setAssistantMode(AssistantMode.Cloud)
