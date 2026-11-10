@@ -3,17 +3,23 @@ package lutukai.pesalens.feature.applock.impl.biometric
 import android.os.Build
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
+import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK
 import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
-import lutukai.pesalens.feature.applock.impl.R
 
 /** Shows the system biometric prompt and reports what happened as a [BiometricOutcome]. */
 class BiometricLauncher(private val activity: FragmentActivity) {
 
-    fun canUseBiometrics(): Boolean =
+    /** Setup needs an enrolled strong biometric, since the prompt's negative button is the PIN route. */
+    fun canUseBiometricsForSetup(): Boolean =
         BiometricManager.from(activity).canAuthenticate(BIOMETRIC_STRONG) == BiometricManager.BIOMETRIC_SUCCESS
+
+    /** Whether the unlock prompt can run: asks for exactly the authenticators [launchUnlock] will use. */
+    fun canUnlock(): Boolean =
+        BiometricManager.from(activity).canAuthenticate(unlockAuthenticators(Build.VERSION.SDK_INT)) ==
+            BiometricManager.BIOMETRIC_SUCCESS
 
     /** Strong biometrics only; the negative button lets the user choose a PIN instead. */
     fun launchSetup(title: String, subtitle: String, usePinLabel: String, onResult: (BiometricOutcome) -> Unit) {
@@ -26,19 +32,13 @@ class BiometricLauncher(private val activity: FragmentActivity) {
         prompt(onResult).authenticate(info)
     }
 
-    /**
-     * Strong biometrics or the device credential. Android 9 and 10 cannot combine the two, so there the prompt is
-     * biometrics only with a Cancel button.
-     */
+    /** Biometrics or the device credential. With a device credential allowed, no negative button is set. */
     fun launchUnlock(title: String, onResult: (BiometricOutcome) -> Unit) {
-        val builder = BiometricPrompt.PromptInfo.Builder().setTitle(title)
-        val combined = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R || Build.VERSION.SDK_INT < Build.VERSION_CODES.P
-        if (combined) {
-            builder.setAllowedAuthenticators(BIOMETRIC_STRONG or DEVICE_CREDENTIAL)
-        } else {
-            builder.setAllowedAuthenticators(BIOMETRIC_STRONG).setNegativeButtonText(activity.getString(R.string.applock_cancel))
-        }
-        prompt(onResult).authenticate(builder.build())
+        val info = BiometricPrompt.PromptInfo.Builder()
+            .setTitle(title)
+            .setAllowedAuthenticators(unlockAuthenticators(Build.VERSION.SDK_INT))
+            .build()
+        prompt(onResult).authenticate(info)
     }
 
     private fun prompt(onResult: (BiometricOutcome) -> Unit) = BiometricPrompt(
@@ -64,3 +64,10 @@ class BiometricLauncher(private val activity: FragmentActivity) {
         else -> BiometricOutcome.Error
     }
 }
+
+/**
+ * Authenticators for the unlock prompt. Android 11+ can combine strong biometrics with the device credential; older
+ * releases only support that combination with weak biometrics (see `BiometricManager.Authenticators`).
+ */
+fun unlockAuthenticators(sdkInt: Int): Int =
+    if (sdkInt >= Build.VERSION_CODES.R) BIOMETRIC_STRONG or DEVICE_CREDENTIAL else BIOMETRIC_WEAK or DEVICE_CREDENTIAL

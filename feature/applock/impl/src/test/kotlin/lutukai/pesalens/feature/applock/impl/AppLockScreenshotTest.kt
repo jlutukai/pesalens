@@ -98,8 +98,9 @@ class AppLockLockedScreenshotTest : AppLockScreenshots() {
     @Test fun lockedPin_dark() = locked("locked_pin_dark", true, LockedUiState.Pin(2, null))
     @Test fun lockedPinWrong_light() = locked("locked_pin_wrong_light", false, LockedUiState.Pin(0, LockedError.Incorrect))
     @Test fun lockedPinCooling_light() = locked("locked_pin_cooling_light", false, LockedUiState.Pin(0, LockedError.CoolingDown(30)))
-    @Test fun lockedBio_light() = locked("locked_bio_light", false, LockedUiState.Biometric)
-    @Test fun lockedBio_dark() = locked("locked_bio_dark", true, LockedUiState.Biometric)
+    @Test fun lockedBio_light() = locked("locked_bio_light", false, LockedUiState.Biometric())
+    @Test fun lockedBioUnavailable_light() = locked("locked_bio_unavailable_light", false, LockedUiState.Biometric(LockedError.BiometricUnavailable))
+    @Test fun lockedBio_dark() = locked("locked_bio_dark", true, LockedUiState.Biometric())
 }
 
 @RunWith(RobolectricTestRunner::class)

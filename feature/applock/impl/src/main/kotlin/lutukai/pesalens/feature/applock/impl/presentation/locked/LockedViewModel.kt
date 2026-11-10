@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import kotlin.time.Clock
 import kotlin.time.Instant
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import lutukai.pesalens.core.domain.repository.AppLockRepository
@@ -21,6 +22,7 @@ class LockedViewModel(
 ) : MviViewModel<LockedUiState, LockedIntent, LockedEffect>(LockedUiState.Pin(digits = 0, error = null)) {
 
     private var loadJob: Job? = null
+    private var countdownJob: Job? = null
 
     // The typed digits stay here, never in state or logs.
     private var entry = ""
@@ -46,12 +48,12 @@ class LockedViewModel(
             val stored = lock.state.first()
             when (stored.method) {
                 LockMethod.Biometric -> {
-                    reduce { LockedUiState.Biometric }
+                    reduce { LockedUiState.Biometric() }
                     emit(LockedEffect.LaunchBiometricUnlock)
                 }
                 LockMethod.Pin -> {
                     cooldownEndsAt = stored.cooldownEndsAt
-                    reduce { LockedUiState.Pin(digits = 0, error = coolingError()) }
+                    startCountdown()
                 }
                 LockMethod.None -> unlock()
             }
@@ -67,6 +69,22 @@ class LockedViewModel(
             return null
         }
         return LockedError.CoolingDown(((remainingMs + MillisPerSecond - 1) / MillisPerSecond).toInt())
+    }
+
+    /**
+     * Shows the remaining whole seconds and ticks once a second until the cooldown has passed, then clears the error
+     * so digits are accepted again. One countdown at a time.
+     */
+    private fun startCountdown() {
+        countdownJob?.cancel()
+        countdownJob = viewModelScope.launch {
+            while (true) {
+                val cooling = coolingError()
+                reduce { LockedUiState.Pin(digits = 0, error = cooling) }
+                if (cooling == null) break
+                delay(MillisPerSecond)
+            }
+        }
     }
 
     private fun digit(d: Char) {
@@ -93,7 +111,7 @@ class LockedViewModel(
                     is PinCheck.Wrong -> reduce { LockedUiState.Pin(digits = 0, error = LockedError.Incorrect) }
                     is PinCheck.CoolingDown -> {
                         cooldownEndsAt = check.until
-                        reduce { LockedUiState.Pin(digits = 0, error = coolingError()) }
+                        startCountdown()
                     }
                 }
             } finally {
@@ -117,11 +135,10 @@ class LockedViewModel(
     private fun biometricResult(outcome: BiometricOutcome) {
         when (outcome) {
             BiometricOutcome.Succeeded -> unlock()
-            BiometricOutcome.Cancelled,
-            BiometricOutcome.UsePinInstead,
-            BiometricOutcome.NotAvailable,
-            BiometricOutcome.Error,
-            -> Unit
+            BiometricOutcome.NotAvailable, BiometricOutcome.Error -> reduce {
+                if (this is LockedUiState.Biometric) copy(error = LockedError.BiometricUnavailable) else this
+            }
+            BiometricOutcome.Cancelled, BiometricOutcome.UsePinInstead -> Unit
         }
     }
 
@@ -129,6 +146,7 @@ class LockedViewModel(
     private fun unlock() {
         if (unlocked) return
         unlocked = true
+        countdownJob?.cancel()
         emit(LockedEffect.Unlocked)
     }
 }

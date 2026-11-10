@@ -11,7 +11,7 @@ import lutukai.pesalens.feature.applock.impl.biometric.BiometricOutcome
 sealed interface LockedUiState : UiState {
     data class Pin(val digits: Int, val error: LockedError?) : LockedUiState
 
-    data object Biometric : LockedUiState
+    data class Biometric(val error: LockedError? = null) : LockedUiState
 }
 
 @Immutable
@@ -19,6 +19,9 @@ sealed interface LockedError {
     data object Incorrect : LockedError
 
     data class CoolingDown(val seconds: Int) : LockedError
+
+    /** The system prompt could not run: no enrolled biometric and no screen lock, or it failed. */
+    data object BiometricUnavailable : LockedError
 }
 
 sealed interface LockedIntent : UiIntent {

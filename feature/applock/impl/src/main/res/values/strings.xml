@@ -31,6 +31,8 @@
     <string name="applock_error_incorrect">Incorrect PIN. Try again.</string>
     <!-- not in prototype -->
     <string name="applock_error_cooldown">Too many attempts. Try again in %1$d seconds.</string>
+    <!-- not in prototype -->
+    <string name="applock_error_biometric_unavailable">Fingerprint, face or screen lock isn\'t available right now. Set one up in your phone\'s settings, then tap to try again.</string>
     <string name="applock_tap_to_unlock">Tap to unlock</string>
     <string name="applock_unlock_biometric_description">Unlock with fingerprint or face</string>
 

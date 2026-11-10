@@ -4,6 +4,8 @@ import app.cash.turbine.test
 import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
 import lutukai.pesalens.core.model.AppLockState
 import lutukai.pesalens.core.model.LockMethod
@@ -28,6 +30,12 @@ class LockedViewModelTest {
     private val lock = FakeAppLockRepository(AppLockState(method = LockMethod.Pin))
 
     private fun vm() = LockedViewModel(lock, clock)
+
+    /** The countdown ticks on virtual time but reads the clock, so let both pass or runTest never goes idle. */
+    private fun TestScope.endCooldown() {
+        clock.advanceBy(60.seconds)
+        advanceTimeBy(60_000)
+    }
 
     private fun LockedViewModel.type(pin: String) = pin.forEach { onIntent(LockedIntent.Digit(it)) }
 
@@ -67,6 +75,7 @@ class LockedViewModelTest {
         vm.type("9")
         assertEquals(LockedUiState.Pin(0, LockedError.CoolingDown(20)), vm.state.value)
         assertEquals(listOf("1357"), lock.checkedPins)
+        endCooldown()
     }
 
     @Test
@@ -86,6 +95,7 @@ class LockedViewModelTest {
         val vm = vm()
         vm.onIntent(LockedIntent.Load)
         assertEquals(LockedUiState.Pin(0, LockedError.CoolingDown(13)), vm.state.value)
+        endCooldown()
     }
 
     @Test
@@ -118,7 +128,7 @@ class LockedViewModelTest {
             assertEquals(LockedEffect.LaunchBiometricUnlock, awaitItem())
             expectNoEvents()
         }
-        assertEquals(LockedUiState.Biometric, vm.state.value)
+        assertEquals(LockedUiState.Biometric(), vm.state.value)
     }
 
     @Test
@@ -155,6 +165,48 @@ class LockedViewModelTest {
             vm.onIntent(LockedIntent.BiometricResult(BiometricOutcome.Cancelled))
             expectNoEvents()
         }
-        assertEquals(LockedUiState.Biometric, vm.state.value)
+        assertEquals(LockedUiState.Biometric(), vm.state.value)
+    }
+
+    @Test
+    fun locked_cooldown_countsDownAndClearsWithoutInput() = runTest {
+        lock.nextCheck = PinCheck.CoolingDown(clock.now + 30.seconds)
+        val vm = vm()
+        vm.onIntent(LockedIntent.Load)
+        vm.type("1357")
+        assertEquals(LockedUiState.Pin(0, LockedError.CoolingDown(30)), vm.state.value)
+        clock.advanceBy(10.seconds)
+        advanceTimeBy(10_001)
+        assertEquals(LockedUiState.Pin(0, LockedError.CoolingDown(20)), vm.state.value)
+        clock.advanceBy(21.seconds)
+        advanceTimeBy(21_000)
+        assertEquals(LockedUiState.Pin(0, null), vm.state.value)
+        vm.type("9")
+        assertEquals(LockedUiState.Pin(1, null), vm.state.value)
+    }
+
+    @Test
+    fun locked_biometricNotAvailable_showsUnavailableErrorAndAllowsRetry() = runTest {
+        lock.stateFlow.value = AppLockState(method = LockMethod.Biometric)
+        val vm = vm()
+        vm.onIntent(LockedIntent.Load)
+        vm.effects.test {
+            assertEquals(LockedEffect.LaunchBiometricUnlock, awaitItem())
+            vm.onIntent(LockedIntent.BiometricResult(BiometricOutcome.NotAvailable))
+            assertEquals(LockedUiState.Biometric(LockedError.BiometricUnavailable), vm.state.value)
+            vm.onIntent(LockedIntent.UnlockWithBiometric)
+            assertEquals(LockedEffect.LaunchBiometricUnlock, awaitItem())
+            vm.onIntent(LockedIntent.BiometricResult(BiometricOutcome.Succeeded))
+            assertEquals(LockedEffect.Unlocked, awaitItem())
+        }
+    }
+
+    @Test
+    fun locked_biometricError_showsUnavailableError() = runTest {
+        lock.stateFlow.value = AppLockState(method = LockMethod.Biometric)
+        val vm = vm()
+        vm.onIntent(LockedIntent.Load)
+        vm.onIntent(LockedIntent.BiometricResult(BiometricOutcome.Error))
+        assertEquals(LockedUiState.Biometric(LockedError.BiometricUnavailable), vm.state.value)
     }
 }

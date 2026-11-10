@@ -76,7 +76,7 @@ fun AppLockSetupScreen(
     ObserveAsEvents(viewModel.effects) { effect ->
         when (effect) {
             AppLockSetupEffect.LaunchBiometricSetup ->
-                if (launcher != null && launcher.canUseBiometrics()) {
+                if (launcher != null && launcher.canUseBiometricsForSetup()) {
                     launcher.launchSetup(promptTitle, promptSubtitle, usePinLabel) {
                         viewModel.onIntent(AppLockSetupIntent.BiometricResult(it))
                     }

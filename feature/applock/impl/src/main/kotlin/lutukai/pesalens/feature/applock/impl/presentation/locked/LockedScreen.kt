@@ -25,8 +25,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -55,7 +58,7 @@ fun LockedScreen(viewModel: LockedViewModel = koinViewModel()) {
     ObserveAsEvents(viewModel.effects) { effect ->
         when (effect) {
             LockedEffect.LaunchBiometricUnlock ->
-                if (launcher != null && launcher.canUseBiometrics()) {
+                if (launcher != null && launcher.canUnlock()) {
                     launcher.launchUnlock(promptTitle) { viewModel.onIntent(LockedIntent.BiometricResult(it)) }
                 } else {
                     viewModel.onIntent(LockedIntent.BiometricResult(BiometricOutcome.NotAvailable))
@@ -84,7 +87,7 @@ fun LockedContent(state: LockedUiState, onIntent: (LockedIntent) -> Unit, modifi
             val padding = Modifier.fillMaxSize().padding(start = PesaSpacing.xxl, top = 56.dp, end = PesaSpacing.xxl, bottom = PesaSpacing.xl)
             when (state) {
                 is LockedUiState.Pin -> PinVariant(state, onIntent, padding)
-                LockedUiState.Biometric -> BiometricVariant(onIntent, padding)
+                is LockedUiState.Biometric -> BiometricVariant(state, onIntent, padding)
             }
         }
     }
@@ -109,6 +112,7 @@ private fun PinVariant(state: LockedUiState.Pin, onIntent: (LockedIntent) -> Uni
         when (it) {
             LockedError.Incorrect -> stringResource(R.string.applock_error_incorrect)
             is LockedError.CoolingDown -> stringResource(R.string.applock_error_cooldown, it.seconds)
+            LockedError.BiometricUnavailable -> stringResource(R.string.applock_error_biometric_unavailable)
         }
     }
     PinLayout(
@@ -117,7 +121,6 @@ private fun PinVariant(state: LockedUiState.Pin, onIntent: (LockedIntent) -> Uni
         onDigit = { onIntent(LockedIntent.Digit(it)) },
         onDelete = { onIntent(LockedIntent.Delete) },
         modifier = modifier,
-        keypadEnabled = state.error !is LockedError.CoolingDown,
     ) {
         BrandRing()
         TitleBlock(stringResource(R.string.applock_locked_title), stringResource(R.string.applock_locked_sub_pin))
@@ -125,7 +128,7 @@ private fun PinVariant(state: LockedUiState.Pin, onIntent: (LockedIntent) -> Uni
 }
 
 @Composable
-private fun BiometricVariant(onIntent: (LockedIntent) -> Unit, modifier: Modifier) {
+private fun BiometricVariant(state: LockedUiState.Biometric, onIntent: (LockedIntent) -> Unit, modifier: Modifier) {
     val colors = PesaLensTheme.colors
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         BrandRing()
@@ -149,6 +152,15 @@ private fun BiometricVariant(onIntent: (LockedIntent) -> Unit, modifier: Modifie
                 }
             }
             Text(stringResource(R.string.applock_tap_to_unlock), style = PesaLensTheme.type.bodySmall, color = colors.textMuted)
+            if (state.error != null) {
+                Text(
+                    stringResource(R.string.applock_error_biometric_unavailable),
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                    style = PesaLensTheme.type.meta,
+                    color = colors.warnText,
+                    textAlign = TextAlign.Center,
+                )
+            }
         }
     }
 }

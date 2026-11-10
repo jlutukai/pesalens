@@ -8,6 +8,7 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -28,6 +29,7 @@ import lutukai.pesalens.feature.applock.api.Locked
 import lutukai.pesalens.feature.applock.api.LockSetupOrigin
 import lutukai.pesalens.feature.applock.impl.presentation.common.PinDotsTag
 import lutukai.pesalens.feature.applock.impl.presentation.locked.LockedContent
+import lutukai.pesalens.feature.applock.impl.presentation.locked.LockedError
 import lutukai.pesalens.feature.applock.impl.presentation.locked.LockedIntent
 import lutukai.pesalens.feature.applock.impl.presentation.locked.LockedUiState
 import lutukai.pesalens.feature.applock.impl.presentation.setup.AppLockSetupContent
@@ -125,7 +127,7 @@ class PinContentTest {
     @Test
     fun locked_biometricButton_sendsIntent() {
         val intents = mutableListOf<LockedIntent>()
-        compose.setContent { PesaLensTheme(darkTheme = false) { LockedContent(LockedUiState.Biometric, intents::add) } }
+        compose.setContent { PesaLensTheme(darkTheme = false) { LockedContent(LockedUiState.Biometric(), intents::add) } }
         compose.onNodeWithContentDescription("Unlock with fingerprint or face").performClick()
         assertEquals(listOf<LockedIntent>(LockedIntent.UnlockWithBiometric), intents)
         compose.onNodeWithText("Tap to unlock").assertIsDisplayed()
@@ -143,5 +145,29 @@ class PinContentTest {
         compose.waitForIdle()
         assertEquals(0, navigator.backCalls)
         assertFalse(compose.activity.isFinishing)
+    }
+
+    @Test
+    fun locked_cooldown_keypadStaysEnabled() {
+        compose.setContent {
+            PesaLensTheme(darkTheme = false) { LockedContent(LockedUiState.Pin(0, LockedError.CoolingDown(30)), {}) }
+        }
+        compose.onNodeWithText("Too many attempts. Try again in 30 seconds.").assertIsDisplayed()
+        compose.onNodeWithText("5").assertIsEnabled()
+        compose.onNodeWithContentDescription("Delete digit").assertIsEnabled()
+    }
+
+    @Test
+    fun locked_biometricUnavailable_showsErrorAndButtonStaysTappable() {
+        val intents = mutableListOf<LockedIntent>()
+        compose.setContent {
+            PesaLensTheme(darkTheme = false) {
+                LockedContent(LockedUiState.Biometric(LockedError.BiometricUnavailable), intents::add)
+            }
+        }
+        compose.onNodeWithText("Fingerprint, face or screen lock isn't available right now. Set one up in your phone's settings, then tap to try again.")
+            .assertIsDisplayed()
+        compose.onNodeWithContentDescription("Unlock with fingerprint or face").performClick()
+        assertEquals(listOf<LockedIntent>(LockedIntent.UnlockWithBiometric), intents)
     }
 }
