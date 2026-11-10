@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="transactions_back">Back to conversation</string>
+    <string name="transactions_subtitle">%1$s · %2$s</string>
+    <string name="transactions_sample_tag">Sample</string>
+    <string name="transactions_category_total">Category total</string>
+    <plurals name="transactions_meta">
+        <item quantity="one">%1$d sample transaction · %2$d%% of spending</item>
+        <item quantity="other">%1$d sample transactions · %2$d%% of spending</item>
+    </plurals>
+    <string name="transactions_list_title">Sample transactions</string>
+    <string name="transactions_total">Total</string>
+    <string name="transactions_footnote">Fictional entries from the built-in sample dataset. They\'re read from this device and never sent to the model.</string>
+    <!-- not in prototype -->
+    <string name="transactions_error">Transactions can\'t be shown right now.</string>
+    <!-- not in prototype -->
+    <string name="transactions_retry">Try again</string>
+</resources>
