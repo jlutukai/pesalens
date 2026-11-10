@@ -28,7 +28,7 @@ import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import kotlin.test.Test
 
-/** Writes PNGs under `build/outputs/roborazzi/` when run via `recordRoborazziDebug`. 412dp wide, as the prototype phone. */
+/** Writes PNGs under `src/test/screenshots/` when run via `recordRoborazziDebug`. 412dp wide, as the prototype phone. */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(qualifiers = "w412dp-h1800dp-xhdpi")
@@ -76,7 +76,7 @@ class CatalogScreenshotTest {
             }
         }
         composeRule.mainClock.advanceTimeBy(200)
-        composeRule.onRoot().captureRoboImage("build/outputs/roborazzi/catalog_${name}_${variant.suffix}.png")
+        composeRule.onRoot().captureRoboImage("src/test/screenshots/catalog_${name}_${variant.suffix}.png")
     }
 }
 

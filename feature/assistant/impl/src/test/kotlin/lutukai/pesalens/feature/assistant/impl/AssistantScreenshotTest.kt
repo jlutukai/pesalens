@@ -39,7 +39,7 @@ private const val TallPhone = "w412dp-h1500dp-420dpi"
 private const val TallBudgetPhone = "w412dp-h2000dp-420dpi"
 
 /**
- * Writes PNGs under `build/outputs/roborazzi/` when run via `recordRoborazziDebug`.
+ * Writes PNGs under `src/test/screenshots/` when run via `recordRoborazziDebug`.
  *
  * The shots are split over several small classes: Robolectric's native renderer returned undrawn frames for some
  * shots once a single class took more than about six of them.
@@ -97,7 +97,7 @@ abstract class AssistantScreenshots {
             // Nothing invalidates a frame the renderer dropped, so ask for another one.
             compose.runOnUiThread { (compose.onRoot().fetchSemanticsNode().root as? View)?.invalidate() }
         }
-        compose.onRoot().captureRoboImage("build/outputs/roborazzi/$name.png")
+        compose.onRoot().captureRoboImage("src/test/screenshots/$name.png")
     }
 
     protected fun shot(name: String, dark: Boolean, state: AssistantUiState, fontScale: Float = 1f) =
@@ -242,8 +242,32 @@ class AssistantReviewDialogScreenshotTest : AssistantScreenshots() {
         compose.setContent { PesaLensTheme(darkTheme = dark) { AssistantContent(review, {}) } }
         compose.waitForIdle()
         // The dialog is its own window and root; capture that one.
-        compose.onAllNodes(isRoot()).onLast().captureRoboImage("build/outputs/roborazzi/assistant_review_dialog_${if (dark) "dark" else "light"}.png")
+        compose.onAllNodes(isRoot()).onLast().captureRoboImage("src/test/screenshots/assistant_review_dialog_${if (dark) "dark" else "light"}.png")
     }
+}
+
+@RunWith(RobolectricTestRunner::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
+@Config(qualifiers = ScreenshotSizes.PhoneLandscape)
+class AssistantLandscapeScreenshotTest : AssistantScreenshots() {
+    private val chat = state(*spending().toTypedArray())
+
+    @Test fun empty_light() = shot("assistant_empty_landscape", false, state())
+    @Test fun empty_dark() = shot("assistant_empty_landscape", true, state())
+    @Test fun spending_light() = shot("assistant_spending_landscape", false, chat)
+    @Test fun spending_dark() = shot("assistant_spending_landscape", true, chat)
+}
+
+@RunWith(RobolectricTestRunner::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
+@Config(qualifiers = ScreenshotSizes.Foldable)
+class AssistantFoldableScreenshotTest : AssistantScreenshots() {
+    private val chat = state(*spending().toTypedArray())
+
+    @Test fun empty_light() = shot("assistant_empty_foldable", false, state())
+    @Test fun empty_dark() = shot("assistant_empty_foldable", true, state())
+    @Test fun spending_light() = shot("assistant_spending_foldable", false, chat)
+    @Test fun spending_dark() = shot("assistant_spending_foldable", true, chat)
 }
 
 @RunWith(RobolectricTestRunner::class)
@@ -252,7 +276,9 @@ class AssistantReviewDialogScreenshotTest : AssistantScreenshots() {
 class AssistantTabletScreenshotTest : AssistantScreenshots() {
     private val chat = state(*spending().toTypedArray())
 
-    @Test fun tablet_light() = shot("assistant_tablet", false, chat)
-    @Test fun tablet_dark() = shot("assistant_tablet", true, chat)
+    @Test fun empty_light() = shot("assistant_empty_tablet", false, state())
+    @Test fun empty_dark() = shot("assistant_empty_tablet", true, state())
+    @Test fun spending_light() = shot("assistant_spending_tablet", false, chat)
+    @Test fun spending_dark() = shot("assistant_spending_tablet", true, chat)
     @Test fun detailPlaceholder_light() = capture("assistant_detail_placeholder_light", false) { DetailPlaceholder() }
 }

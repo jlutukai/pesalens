@@ -1,11 +1,14 @@
 package lutukai.pesalens.feature.onboarding.impl
 
+import android.view.View
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.unit.dp
@@ -22,25 +25,25 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
-/** Writes PNGs under `build/outputs/roborazzi/` when run via `recordRoborazziDebug`. */
-@RunWith(RobolectricTestRunner::class)
-@GraphicsMode(GraphicsMode.Mode.NATIVE)
-@Config(qualifiers = ScreenshotSizes.Phone)
-class OnboardingScreenshotTest {
+private const val DrawAttempts = 10
+
+/**
+ * Writes PNGs under `src/test/screenshots/` when run via `recordRoborazziDebug`. The shots are split over small classes
+ * because Robolectric's native renderer returns undrawn frames once a class takes too many of them.
+ */
+abstract class OnboardingScreenshots {
     @get:Rule
     val compose = createComposeRule()
 
-    @Test fun welcome_light() = capture("welcome_light", dark = false) { WelcomeContent(WelcomeUiState(), {}) }
+    /** Robolectric's native renderer sometimes hands back the bare window; an undrawn root has a single colour. */
+    private fun hasDrawn(): Boolean {
+        val bmp = compose.onRoot().captureToImage().asAndroidBitmap()
+        val first = bmp.getPixel(0, 0)
+        return (0 until bmp.height step 8).any { y -> (0 until bmp.width step 8).any { x -> bmp.getPixel(x, y) != first } }
+    }
 
-    @Test fun welcome_dark() = capture("welcome_dark", dark = true) { WelcomeContent(WelcomeUiState(), {}) }
-
-    @Test
-    @Config(qualifiers = ScreenshotSizes.Tablet)
-    fun welcome_expanded_light() = capture("welcome_expanded_light", dark = false) { WelcomeContent(WelcomeUiState(), {}) }
-
-    @Test fun consent_sheet_light() = capture("consent_sheet_light", dark = false) { Sheet() }
-
-    @Test fun consent_sheet_dark() = capture("consent_sheet_dark", dark = true) { Sheet() }
+    protected fun welcome(name: String, dark: Boolean) =
+        capture("${name}_${if (dark) "dark" else "light"}", dark) { WelcomeContent(WelcomeUiState(), {}) }
 
     /** Stands in for the overlay scene's 22dp padding and surface, so the body is judged against the prototype. */
     @Composable
@@ -50,8 +53,50 @@ class OnboardingScreenshotTest {
         }
     }
 
+    protected fun consent(name: String, dark: Boolean) = capture("${name}_${if (dark) "dark" else "light"}", dark) { Sheet() }
+
     private fun capture(name: String, dark: Boolean, content: @Composable () -> Unit) {
         compose.setContent { PesaLensTheme(darkTheme = dark) { content() } }
-        compose.onRoot().captureRoboImage("build/outputs/roborazzi/$name.png")
+        for (attempt in 1..DrawAttempts) {
+            compose.waitForIdle()
+            if (hasDrawn()) break
+            // Nothing invalidates a frame the renderer dropped, so ask for another one.
+            compose.runOnUiThread { (compose.onRoot().fetchSemanticsNode().root as? View)?.invalidate() }
+        }
+        compose.onRoot().captureRoboImage("src/test/screenshots/$name.png")
     }
+}
+
+@RunWith(RobolectricTestRunner::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
+@Config(qualifiers = ScreenshotSizes.Phone)
+class OnboardingPhoneScreenshotTest : OnboardingScreenshots() {
+    @Test fun welcome_light() = welcome("welcome", false)
+    @Test fun welcome_dark() = welcome("welcome", true)
+    @Test fun consent_light() = consent("consent_sheet", false)
+    @Test fun consent_dark() = consent("consent_sheet", true)
+}
+
+@RunWith(RobolectricTestRunner::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
+@Config(qualifiers = ScreenshotSizes.PhoneLandscape)
+class OnboardingLandscapeScreenshotTest : OnboardingScreenshots() {
+    @Test fun welcome_light() = welcome("welcome_landscape", false)
+    @Test fun welcome_dark() = welcome("welcome_landscape", true)
+}
+
+@RunWith(RobolectricTestRunner::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
+@Config(qualifiers = ScreenshotSizes.Foldable)
+class OnboardingFoldableScreenshotTest : OnboardingScreenshots() {
+    @Test fun welcome_light() = welcome("welcome_foldable", false)
+    @Test fun welcome_dark() = welcome("welcome_foldable", true)
+}
+
+@RunWith(RobolectricTestRunner::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
+@Config(qualifiers = ScreenshotSizes.Tablet)
+class OnboardingTabletScreenshotTest : OnboardingScreenshots() {
+    @Test fun welcome_light() = welcome("welcome_tablet", false)
+    @Test fun welcome_dark() = welcome("welcome_tablet", true)
 }

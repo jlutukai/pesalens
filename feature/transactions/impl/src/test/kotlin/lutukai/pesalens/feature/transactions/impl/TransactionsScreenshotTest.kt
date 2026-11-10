@@ -25,7 +25,7 @@ private const val DrawAttempts = 10
 private const val TallPhone = "w412dp-h1000dp-420dpi"
 
 /**
- * Writes PNGs under `build/outputs/roborazzi/` when run via `recordRoborazziDebug`. The shots are split over small
+ * Writes PNGs under `src/test/screenshots/` when run via `recordRoborazziDebug`. The shots are split over small
  * classes because Robolectric's native renderer returned undrawn frames once a class took too many of them.
  */
 abstract class TransactionsScreenshots {
@@ -51,7 +51,7 @@ abstract class TransactionsScreenshots {
             // Nothing invalidates a frame the renderer dropped, so ask for another one.
             compose.runOnUiThread { (compose.onRoot().fetchSemanticsNode().root as? View)?.invalidate() }
         }
-        compose.onRoot().captureRoboImage("build/outputs/roborazzi/$name.png")
+        compose.onRoot().captureRoboImage("src/test/screenshots/$name.png")
     }
 }
 
@@ -83,7 +83,24 @@ class TransactionsEmptyScreenshotTest : TransactionsScreenshots() {
 
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
+@Config(qualifiers = ScreenshotSizes.PhoneLandscape)
+class TransactionsLandscapeScreenshotTest : TransactionsScreenshots() {
+    @Test fun content_light() = shot("transactions_landscape", false, foodContent())
+    @Test fun content_dark() = shot("transactions_landscape", true, foodContent())
+}
+
+@RunWith(RobolectricTestRunner::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
+@Config(qualifiers = ScreenshotSizes.Foldable)
+class TransactionsFoldableScreenshotTest : TransactionsScreenshots() {
+    @Test fun content_light() = shot("transactions_foldable", false, foodContent())
+    @Test fun content_dark() = shot("transactions_foldable", true, foodContent())
+}
+
+@RunWith(RobolectricTestRunner::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(qualifiers = ScreenshotSizes.Tablet)
 class TransactionsTabletScreenshotTest : TransactionsScreenshots() {
-    @Test fun tablet_light() = shot("transactions_tablet", false, foodContent())
+    @Test fun content_light() = shot("transactions_tablet", false, foodContent())
+    @Test fun content_dark() = shot("transactions_tablet", true, foodContent())
 }

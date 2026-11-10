@@ -41,7 +41,7 @@ class ActionsScreenshotTest {
 
     private fun capture(darkTheme: Boolean, path: String) {
         composeRule.setContent { PesaLensTheme(darkTheme) { ActionsSheet() } }
-        composeRule.onRoot().captureRoboImage("build/outputs/roborazzi/$path")
+        composeRule.onRoot().captureRoboImage("src/test/screenshots/$path")
     }
 }
 

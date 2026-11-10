@@ -28,7 +28,7 @@ import org.robolectric.annotation.GraphicsMode
 private const val DrawAttempts = 10
 
 /**
- * Writes PNGs under `build/outputs/roborazzi/` when run via `recordRoborazziDebug`.
+ * Writes PNGs under `src/test/screenshots/` when run via `recordRoborazziDebug`.
  *
  * The shots are split over several small classes: Robolectric's native renderer returned undrawn frames for some
  * shots once a single class took more than about six of them.
@@ -45,6 +45,14 @@ abstract class AppLockScreenshots {
 
     protected fun setup(name: String, dark: Boolean, state: AppLockSetupUiState) =
         capture(name, dark) { AppLockSetupContent(state, {}) }
+
+    /** One representative state per sealed screen state at the larger sizes: choose, PIN entry, locked, light and dark. */
+    protected fun chooseShot(suffix: String, dark: Boolean) = setup("choose_${suffix}_${theme(dark)}", dark, chooseOff)
+    protected fun createShot(suffix: String, dark: Boolean) = setup("create_${suffix}_${theme(dark)}", dark, create)
+    protected fun lockedShot(suffix: String, dark: Boolean) =
+        locked("locked_pin_${suffix}_${theme(dark)}", dark, LockedUiState.Pin(2, null))
+
+    private fun theme(dark: Boolean) = if (dark) "dark" else "light"
 
     protected fun locked(name: String, dark: Boolean, state: LockedUiState) =
         capture(name, dark) { LockedContent(state, {}) }
@@ -64,7 +72,7 @@ abstract class AppLockScreenshots {
             // Nothing invalidates a frame the renderer dropped, so ask for another one.
             compose.runOnUiThread { (compose.onRoot().fetchSemanticsNode().root as? View)?.invalidate() }
         }
-        compose.onRoot().captureRoboImage("build/outputs/roborazzi/$name.png")
+        compose.onRoot().captureRoboImage("src/test/screenshots/$name.png")
     }
 }
 
@@ -107,6 +115,34 @@ class AppLockLockedScreenshotTest : AppLockScreenshots() {
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(qualifiers = ScreenshotSizes.PhoneLandscape)
 class AppLockLandscapeScreenshotTest : AppLockScreenshots() {
-    @Test fun createLandscape_light() = setup("create_landscape_light", false, create)
-    @Test fun lockedPinLandscape_light() = locked("locked_pin_landscape_light", false, LockedUiState.Pin(2, null))
+    @Test fun choose_light() = chooseShot("landscape", false)
+    @Test fun choose_dark() = chooseShot("landscape", true)
+    @Test fun create_light() = createShot("landscape", false)
+    @Test fun create_dark() = createShot("landscape", true)
+    @Test fun locked_light() = lockedShot("landscape", false)
+    @Test fun locked_dark() = lockedShot("landscape", true)
+}
+
+@RunWith(RobolectricTestRunner::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
+@Config(qualifiers = ScreenshotSizes.Foldable)
+class AppLockFoldableScreenshotTest : AppLockScreenshots() {
+    @Test fun choose_light() = chooseShot("foldable", false)
+    @Test fun choose_dark() = chooseShot("foldable", true)
+    @Test fun create_light() = createShot("foldable", false)
+    @Test fun create_dark() = createShot("foldable", true)
+    @Test fun locked_light() = lockedShot("foldable", false)
+    @Test fun locked_dark() = lockedShot("foldable", true)
+}
+
+@RunWith(RobolectricTestRunner::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
+@Config(qualifiers = ScreenshotSizes.Tablet)
+class AppLockTabletScreenshotTest : AppLockScreenshots() {
+    @Test fun choose_light() = chooseShot("tablet", false)
+    @Test fun choose_dark() = chooseShot("tablet", true)
+    @Test fun create_light() = createShot("tablet", false)
+    @Test fun create_dark() = createShot("tablet", true)
+    @Test fun locked_light() = lockedShot("tablet", false)
+    @Test fun locked_dark() = lockedShot("tablet", true)
 }

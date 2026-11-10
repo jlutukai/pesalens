@@ -27,7 +27,7 @@ import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import kotlin.test.Test
 
-/** Writes PNGs under `build/outputs/roborazzi/` when run via `recordRoborazziDebug`. 412dp wide, as the prototype phone. */
+/** Writes PNGs under `src/test/screenshots/` when run via `recordRoborazziDebug`. 412dp wide, as the prototype phone. */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(qualifiers = "w412dp-h1800dp-xhdpi")
@@ -68,7 +68,7 @@ class AffordBudgetScreenshotTest {
             }
         }
         composeRule.mainClock.advanceTimeBy(200)
-        composeRule.onRoot().captureRoboImage("build/outputs/roborazzi/afford_${name}_${variant.suffix}.png")
+        composeRule.onRoot().captureRoboImage("src/test/screenshots/afford_${name}_${variant.suffix}.png")
     }
 }
 
@@ -134,7 +134,7 @@ class AffordBudgetDialogScreenshotTest {
             }
         }
         // The dialog is its own window and root; capture that one.
-        composeRule.onAllNodes(isRoot()).onLast().captureRoboImage("build/outputs/roborazzi/afford_${name}_${if (dark) "dark" else "light"}.png")
+        composeRule.onAllNodes(isRoot()).onLast().captureRoboImage("src/test/screenshots/afford_${name}_${if (dark) "dark" else "light"}.png")
     }
 }
 
@@ -164,6 +164,6 @@ class ModelStatusScreenshotTest {
             }
         }
         composeRule.mainClock.advanceTimeBy(200)
-        composeRule.onRoot().captureRoboImage("build/outputs/roborazzi/afford_$name.png")
+        composeRule.onRoot().captureRoboImage("src/test/screenshots/afford_$name.png")
     }
 }

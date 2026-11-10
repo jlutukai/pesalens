@@ -26,7 +26,7 @@ private const val TallPhone = "w412dp-h1000dp-420dpi"
 private val origin = ModelSetupOrigin.Settings
 
 /**
- * Writes PNGs under `build/outputs/roborazzi/` when run via `recordRoborazziDebug`. The shots are split over small
+ * Writes PNGs under `src/test/screenshots/` when run via `recordRoborazziDebug`. The shots are split over small
  * classes because Robolectric's native renderer returned undrawn frames once a class took too many of them.
  */
 abstract class ModelSetupScreenshots {
@@ -48,7 +48,7 @@ abstract class ModelSetupScreenshots {
             // Nothing invalidates a frame the renderer dropped, so ask for another one.
             compose.runOnUiThread { (compose.onRoot().fetchSemanticsNode().root as? View)?.invalidate() }
         }
-        compose.onRoot().captureRoboImage("build/outputs/roborazzi/${name}_${if (dark) "dark" else "light"}.png")
+        compose.onRoot().captureRoboImage("src/test/screenshots/${name}_${if (dark) "dark" else "light"}.png")
     }
 }
 
@@ -124,7 +124,30 @@ class ModelSetupUnsupportedScreenshotTest : ModelSetupScreenshots() {
 
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
+@Config(qualifiers = ScreenshotSizes.PhoneLandscape)
+class ModelSetupLandscapeScreenshotTest : ModelSetupScreenshots() {
+    private val state = ModelSetupUiState.ReadyToDownload(origin)
+
+    @Test fun readyToDownload_light() = shot("model_landscape", false, state)
+    @Test fun readyToDownload_dark() = shot("model_landscape", true, state)
+}
+
+@RunWith(RobolectricTestRunner::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
+@Config(qualifiers = ScreenshotSizes.Foldable)
+class ModelSetupFoldableScreenshotTest : ModelSetupScreenshots() {
+    private val state = ModelSetupUiState.ReadyToDownload(origin)
+
+    @Test fun readyToDownload_light() = shot("model_foldable", false, state)
+    @Test fun readyToDownload_dark() = shot("model_foldable", true, state)
+}
+
+@RunWith(RobolectricTestRunner::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(qualifiers = ScreenshotSizes.Tablet)
 class ModelSetupTabletScreenshotTest : ModelSetupScreenshots() {
-    @Test fun tablet_light() = shot("model_tablet", false, ModelSetupUiState.Failed(origin, 42))
+    private val state = ModelSetupUiState.ReadyToDownload(origin)
+
+    @Test fun readyToDownload_light() = shot("model_tablet", false, state)
+    @Test fun readyToDownload_dark() = shot("model_tablet", true, state)
 }

@@ -33,7 +33,7 @@ private const val DrawAttempts = 10
 private const val TallPhone = "w412dp-h1000dp-420dpi"
 
 /**
- * Writes PNGs under `build/outputs/roborazzi/` when run via `recordRoborazziDebug`. The shots are split over small
+ * Writes PNGs under `src/test/screenshots/` when run via `recordRoborazziDebug`. The shots are split over small
  * classes because Robolectric's native renderer returned undrawn frames once a class took too many of them, and a
  * dialog window left over from one test confuses the next test's root capture in the same class.
  */
@@ -72,14 +72,14 @@ abstract class SettingsScreenshots {
                 SettingsContent(state, {})
             }
         }
-        compose.onRoot().captureRoboImage("build/outputs/roborazzi/${name}_${if (dark) "dark" else "light"}.png")
+        compose.onRoot().captureRoboImage("src/test/screenshots/${name}_${if (dark) "dark" else "light"}.png")
     }
 
     /** The dialog is its own window and root; capture that one. */
     protected fun dialogShot(name: String, dark: Boolean, state: SettingsUiState) {
         compose.setContent { PesaLensTheme(darkTheme = dark) { SettingsContent(state, {}) } }
         compose.waitForIdle()
-        compose.onAllNodes(isRoot()).onLast().captureRoboImage("build/outputs/roborazzi/${name}_${if (dark) "dark" else "light"}.png")
+        compose.onAllNodes(isRoot()).onLast().captureRoboImage("src/test/screenshots/${name}_${if (dark) "dark" else "light"}.png")
     }
 }
 
@@ -136,7 +136,24 @@ class SettingsResetDialogScreenshotTest : SettingsScreenshots() {
 
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
+@Config(qualifiers = ScreenshotSizes.PhoneLandscape)
+class SettingsLandscapeScreenshotTest : SettingsScreenshots() {
+    @Test fun settings_light() = shot("settings_landscape", false, state)
+    @Test fun settings_dark() = shot("settings_landscape", true, state)
+}
+
+@RunWith(RobolectricTestRunner::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
+@Config(qualifiers = ScreenshotSizes.Foldable)
+class SettingsFoldableScreenshotTest : SettingsScreenshots() {
+    @Test fun settings_light() = shot("settings_foldable", false, state)
+    @Test fun settings_dark() = shot("settings_foldable", true, state)
+}
+
+@RunWith(RobolectricTestRunner::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(qualifiers = ScreenshotSizes.Tablet)
 class SettingsTabletScreenshotTest : SettingsScreenshots() {
-    @Test fun tablet_light() = shot("settings_tablet", false, state)
+    @Test fun settings_light() = shot("settings_tablet", false, state)
+    @Test fun settings_dark() = shot("settings_tablet", true, state)
 }
