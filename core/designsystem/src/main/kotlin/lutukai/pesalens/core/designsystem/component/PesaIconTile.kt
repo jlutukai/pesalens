@@ -20,6 +20,9 @@ enum class TileTone {
 
     /** warn fill, border and icon. */
     Warn,
+
+    /** surfaceAlt fill, border, text icon (transaction rows). */
+    Neutral,
 }
 
 /** Square icon tile (decorative icon). */
@@ -35,6 +38,7 @@ fun PesaIconTile(
     val (fill, edge, ink) = when (tone) {
         TileTone.Accent -> Triple(colors.tintSubtle, colors.border, colors.accentText)
         TileTone.Warn -> Triple(colors.warnBackground, colors.warnBorder, colors.warnText)
+        TileTone.Neutral -> Triple(colors.surfaceAlt, colors.border, colors.text)
     }
     Surface(Modifier.size(size), shape = shape, color = fill, contentColor = ink, border = BorderStroke(1.dp, edge)) {
         Box(contentAlignment = Alignment.Center) {

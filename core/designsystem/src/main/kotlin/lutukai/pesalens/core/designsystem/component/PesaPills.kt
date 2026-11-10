@@ -5,7 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -49,7 +49,7 @@ fun PesaPill(text: String, tone: PillTone, icon: ImageVector? = null, height: Dp
     val colors = PesaLensTheme.colors
     val shape = RoundedCornerShape(height / 2)
     val content = if (tone == PillTone.Accent) colors.accentText else colors.text
-    val base = Modifier.height(height).clip(shape)
+    val base = Modifier.heightIn(min = height).clip(shape)
     val styled = when (tone) {
         PillTone.Neutral -> base.border(BorderStroke(1.dp, colors.textMuted), shape)
         PillTone.Accent -> base.background(colors.tint).border(BorderStroke(1.dp, colors.accent), shape)
