@@ -17,4 +17,21 @@
     <!-- Messages -->
     <string name="assistant_message_switched_cloud">Switched to cloud AI.</string>
     <string name="assistant_message_switched_on_device">Switched to on-device AI.</string>
+
+    <!-- Screen chrome (prototype 03 Assistant) -->
+    <string name="assistant_title">PesaLens</string>
+    <string name="assistant_sample_data">Sample data</string>
+    <string name="assistant_settings">Settings</string>
+    <string name="assistant_greeting">Hi! I can show where your money went, estimate how long a purchase will take to save for, or draft a budget. What would you like to look at?</string>
+    <string name="assistant_price_question">Happy to estimate that. What\'s the laptop\'s price? Type an amount below, or pick an example.</string>
+    <string name="assistant_composer_placeholder">Ask about your money</string>
+    <string name="assistant_send">Send</string>
+    <string name="assistant_thinking_asking_cloud">Asking cloud AI…</string>
+    <string name="assistant_thinking_interpreting_on_device">Interpreting on device…</string>
+    <string name="assistant_thinking_calculating">Calculating on this device…</string>
+    <string name="assistant_thinking_saving">Saving to this device…</string>
+    <string name="assistant_suggestion_show_category">Show %1$s</string>
+    <string name="assistant_suggestion_try_saving_15k">Try saving KSh 15,000 a month</string>
+    <!-- not in prototype -->
+    <string name="assistant_detail_placeholder">Pick a category from a result, or open Settings</string>
 </resources>
