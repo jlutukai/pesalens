@@ -209,4 +209,22 @@ class LockedViewModelTest {
         vm.onIntent(LockedIntent.BiometricResult(BiometricOutcome.Error))
         assertEquals(LockedUiState.Biometric(LockedError.BiometricUnavailable), vm.state.value)
     }
+
+    @Test
+    fun locked_digitAtExpiry_beforeTick_keepsDotsInSync() = runTest {
+        lock.nextCheck = PinCheck.CoolingDown(clock.now + 30.seconds)
+        val vm = vm()
+        vm.onIntent(LockedIntent.Load)
+        vm.type("1357")
+        lock.nextCheck = PinCheck.Correct
+        clock.advanceBy(31.seconds)
+        vm.type("2")
+        advanceTimeBy(31_000)
+        assertEquals(LockedUiState.Pin(1, null), vm.state.value)
+        vm.effects.test {
+            vm.type("580")
+            assertEquals(LockedEffect.Unlocked, awaitItem())
+        }
+        assertEquals(listOf("1357", "2580"), lock.checkedPins)
+    }
 }

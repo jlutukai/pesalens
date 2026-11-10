@@ -80,11 +80,19 @@ class LockedViewModel(
         countdownJob = viewModelScope.launch {
             while (true) {
                 val cooling = coolingError()
-                reduce { LockedUiState.Pin(digits = 0, error = cooling) }
+                // Never overwrite the digit count: a digit typed right after expiry is already in `entry`.
+                reduce { LockedUiState.Pin(entry.length, cooling) }
                 if (cooling == null) break
-                delay(MillisPerSecond)
+                delay(untilNextSecond())
             }
         }
+    }
+
+    /** Time until the displayed whole-second count next drops, so the last tick lands exactly on expiry. */
+    private fun untilNextSecond(): Long {
+        val remainingMs = ((cooldownEndsAt ?: return MillisPerSecond) - clock.now()).inWholeMilliseconds
+        val wait = remainingMs % MillisPerSecond
+        return if (wait <= 0) MillisPerSecond else wait
     }
 
     private fun digit(d: Char) {
