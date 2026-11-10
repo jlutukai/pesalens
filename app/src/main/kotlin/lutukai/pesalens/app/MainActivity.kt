@@ -1,14 +1,16 @@
 package lutukai.pesalens.app
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.material3.Text
+import androidx.activity.enableEdgeToEdge
+import androidx.fragment.app.FragmentActivity
 
-// Temporary entry point; Task 17 replaces it with the real app shell.
-class MainActivity : ComponentActivity() {
+/** A [FragmentActivity] because the app lock's BiometricPrompt needs one. */
+class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { Text("PesaLens") }
+        // Edge to edge from the first frame; PesaLensApp re-applies it with the bar icons matched to the app's theme.
+        enableEdgeToEdge()
+        setContent { PesaLensApp() }
     }
 }

@@ -36,6 +36,7 @@ dependencies {
     implementation(projects.feature.modelsetup.impl)
 
     implementation(projects.core.data)
+    implementation(projects.core.domain)
     implementation(projects.core.navigation)
     implementation(projects.core.ui)
 
