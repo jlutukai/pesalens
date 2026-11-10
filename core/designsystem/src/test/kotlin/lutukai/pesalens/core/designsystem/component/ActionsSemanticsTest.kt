@@ -1,5 +1,6 @@
 package lutukai.pesalens.core.designsystem.component
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -8,7 +9,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
-import androidx.compose.ui.test.assertHeightIsAtLeast
+import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsNotSelected
@@ -22,12 +23,14 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.unit.dp
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import kotlinx.collections.immutable.persistentListOf
 import lutukai.pesalens.core.designsystem.icon.PesaIcons
 import lutukai.pesalens.core.designsystem.theme.PesaLensTheme
 import org.junit.Rule
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
 class ActionsSemanticsTest {
@@ -108,21 +111,38 @@ class ActionsSemanticsTest {
         assertEquals(1, deletes)
     }
 
+    private fun SemanticsNodeInteraction.assertTouchAtLeast48(width: Boolean = true) {
+        val b = fetchSemanticsNode().touchBoundsInRoot
+        val minPx = with(composeRule.density) { 48.dp.toPx() }
+        assertTrue(b.height >= minPx - 0.5f, "touch height ${b.height} < $minPx")
+        if (width) assertTrue(b.width >= minPx - 0.5f, "touch width ${b.width} < $minPx")
+    }
+
     @Test
+    @Config(qualifiers = "w360dp-h1000dp-xhdpi")
     fun allActions_meetMinTouchTarget() {
         composeRule.setContent {
             PesaLensTheme(darkTheme = false) {
-                PesaButton("Save", {})
-                PesaStepperButton(PesaIcons.Plus, "Increase", {})
-                PesaComposer("", {}, {}, sendEnabled = true, placeholder = "Ask", sendContentDescription = "Send")
-                PesaPinPad({}, {}, "Delete digit")
+                Column {
+                    PesaButton("Save", {})
+                    PesaSuggestionChip("Chip", {})
+                    PesaSegmentedControl(modeOptions(true), "cloud", {}, "Assistant mode")
+                    PesaStepperButton(PesaIcons.Plus, "Increase", {})
+                    PesaStepperButton(PesaIcons.Plus, "Increase dense", {}, width = 44.dp)
+                    PesaComposer("", {}, {}, sendEnabled = true, placeholder = "Ask", sendContentDescription = "Send")
+                    PesaPinPad({}, {}, "Delete digit")
+                }
             }
         }
-        composeRule.onNodeWithText("Save").assertHeightIsAtLeast(48.dp)
-        composeRule.onNodeWithContentDescription("Increase").assertHeightIsAtLeast(48.dp)
-        composeRule.onNodeWithContentDescription("Send").assertHeightIsAtLeast(48.dp)
-        composeRule.onNodeWithText("5").assertHeightIsAtLeast(48.dp)
-        composeRule.onNodeWithContentDescription("Delete digit").assertHeightIsAtLeast(48.dp)
+        composeRule.onNodeWithText("Save").assertTouchAtLeast48(width = false)
+        composeRule.onNodeWithText("Chip").assertTouchAtLeast48(width = false)
+        composeRule.onNodeWithText("Cloud AI").assertTouchAtLeast48(width = false)
+        composeRule.onNodeWithText("On-device AI").assertTouchAtLeast48(width = false)
+        composeRule.onNodeWithContentDescription("Increase").assertTouchAtLeast48()
+        composeRule.onNodeWithContentDescription("Increase dense").assertTouchAtLeast48()
+        composeRule.onNodeWithContentDescription("Send").assertTouchAtLeast48()
+        composeRule.onNodeWithText("5").assertTouchAtLeast48()
+        composeRule.onNodeWithContentDescription("Delete digit").assertTouchAtLeast48()
     }
 
     @Test
