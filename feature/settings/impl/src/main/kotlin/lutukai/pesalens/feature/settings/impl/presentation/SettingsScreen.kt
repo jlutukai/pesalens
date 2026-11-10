@@ -30,6 +30,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -74,6 +75,9 @@ private val ContentMaxWidth = 640.dp
 
 /** Two icon-and-label segments; the equal-width segments need a bounded width beside the "Theme" label. */
 private val ThemeControlWidth = 220.dp
+
+/** From this font scale the "Theme" label and the control are stacked instead of sharing a line. */
+private const val StackFontScale = 1.5f
 
 @Composable
 fun SettingsScreen(viewModel: SettingsViewModel = koinViewModel()) {
@@ -192,24 +196,45 @@ private fun SecurityAndAppearance(state: SettingsUiState, onIntent: (SettingsInt
             subtitle = lockStatus,
         )
         SectionLabel(stringResource(R.string.settings_appearance_header), Modifier.padding(top = PesaSpacing.lg, bottom = PesaSpacing.xs))
-        Row(
-            Modifier.fillMaxWidth().heightIn(min = 56.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(PesaSpacing.md),
-        ) {
+        // At large font scales the label and control no longer fit side by side, so the control drops under the label.
+        val stacked = LocalDensity.current.fontScale >= StackFontScale
+        val label = @Composable { modifier: Modifier ->
             Text(
                 stringResource(R.string.settings_theme),
-                modifier = Modifier.weight(1f).padding(start = PesaSpacing.xs),
+                modifier = modifier.padding(start = PesaSpacing.xs),
                 style = PesaLensTheme.type.body,
                 color = PesaLensTheme.colors.text,
             )
-            PesaSegmentedControl(
-                options = themeOptions,
-                selected = state.resolvedDark,
-                onSelect = { onIntent(SettingsIntent.SetTheme(it)) },
-                contentDescription = stringResource(R.string.settings_theme),
-                modifier = Modifier.width(ThemeControlWidth),
-            )
+        }
+        if (stacked) {
+            Column(
+                Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(vertical = PesaSpacing.sm),
+                verticalArrangement = Arrangement.spacedBy(PesaSpacing.sm),
+            ) {
+                label(Modifier)
+                PesaSegmentedControl(
+                    options = themeOptions,
+                    selected = state.resolvedDark,
+                    onSelect = { onIntent(SettingsIntent.SetTheme(it)) },
+                    contentDescription = stringResource(R.string.settings_theme),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        } else {
+            Row(
+                Modifier.fillMaxWidth().heightIn(min = 56.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(PesaSpacing.md),
+            ) {
+                label(Modifier.weight(1f))
+                PesaSegmentedControl(
+                    options = themeOptions,
+                    selected = state.resolvedDark,
+                    onSelect = { onIntent(SettingsIntent.SetTheme(it)) },
+                    contentDescription = stringResource(R.string.settings_theme),
+                    modifier = Modifier.width(ThemeControlWidth),
+                )
+            }
         }
     }
 }

@@ -2,6 +2,9 @@ package lutukai.pesalens.feature.settings.impl
 
 import android.view.View
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.isRoot
@@ -62,8 +65,13 @@ abstract class SettingsScreenshots {
         }
     }
 
-    protected fun shot(name: String, dark: Boolean, state: SettingsUiState) {
-        draw(dark) { SettingsContent(state, {}) }
+    protected fun shot(name: String, dark: Boolean, state: SettingsUiState, fontScale: Float = 1f) {
+        draw(dark) {
+            val density = LocalDensity.current
+            CompositionLocalProvider(LocalDensity provides Density(density.density, fontScale = fontScale)) {
+                SettingsContent(state, {})
+            }
+        }
         compose.onRoot().captureRoboImage("build/outputs/roborazzi/${name}_${if (dark) "dark" else "light"}.png")
     }
 
@@ -97,6 +105,13 @@ class SettingsReadyScreenshotTest : SettingsScreenshots() {
 
     @Test fun settingsOnDevice_light() = shot("settings_on_device", false, ready)
     @Test fun settingsOnDevice_dark() = shot("settings_on_device", true, ready)
+}
+
+@RunWith(RobolectricTestRunner::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
+@Config(qualifiers = TallPhone)
+class SettingsFontScaleScreenshotTest : SettingsScreenshots() {
+    @Test fun settings_fontScale2_light() = shot("settings_fontscale2", false, state, fontScale = 2f)
 }
 
 @RunWith(RobolectricTestRunner::class)

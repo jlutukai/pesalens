@@ -1,5 +1,7 @@
 package lutukai.pesalens.feature.settings.impl
 
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
@@ -10,9 +12,15 @@ import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.height
+import androidx.compose.ui.unit.width
 import lutukai.pesalens.core.designsystem.theme.PesaLensTheme
 import lutukai.pesalens.core.model.AssistantMode
 import lutukai.pesalens.core.model.ModelStatus
@@ -25,6 +33,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+
+private val SegmentMinHeight = 44.dp
 
 @RunWith(RobolectricTestRunner::class)
 @Config(qualifiers = "w412dp-h1400dp-420dpi")
@@ -68,6 +78,30 @@ class SettingsContentTest {
         all[3].assertIsSelected()
         all[2].performClick()
         assertEquals(listOf<SettingsIntent>(SettingsIntent.SetTheme(dark = false)), intents)
+    }
+
+    @Test
+    fun settings_fontScale2_themeStacksAndOptionsStayVisible() {
+        val intents = mutableListOf<SettingsIntent>()
+        compose.setContent {
+            val density = LocalDensity.current
+            CompositionLocalProvider(LocalDensity provides Density(density.density, fontScale = 2f)) {
+                PesaLensTheme(darkTheme = false) { SettingsContent(SettingsUiState(), intents::add) }
+            }
+        }
+        compose.onNodeWithText("Theme").performScrollTo().assertIsDisplayed()
+        val light = compose.onNodeWithText("Light").performScrollTo().assertIsDisplayed()
+        val dark = compose.onNodeWithText("Dark").assertIsDisplayed()
+        // Stacked: the control sits under the label at full width. PesaSegmentedControl lays its buttons out at 44dp minimum.
+        val label = compose.onNodeWithText("Theme").getUnclippedBoundsInRoot()
+        val options = compose.onAllNodes(radios)
+        val first = options[2].getUnclippedBoundsInRoot()
+        val second = options[3].getUnclippedBoundsInRoot()
+        assertTrue(first.top >= label.bottom, "control is below the label")
+        assertTrue(first.height >= SegmentMinHeight && second.height >= SegmentMinHeight, "segment buttons keep their minimum height")
+        // Each option's text fits inside its own button.
+        assertTrue(light.getUnclippedBoundsInRoot().width <= first.width)
+        assertTrue(dark.getUnclippedBoundsInRoot().width <= second.width)
     }
 
     @Test
