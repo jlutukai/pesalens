@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Intro suggestions (prototype SUGGEST) -->
+    <string name="core_ui_suggest_where_money_went">Where did my money go this month?</string>
+    <string name="core_ui_suggest_afford_laptop">Can I afford a laptop?</string>
+    <string name="core_ui_suggest_create_budget">Help me create a budget</string>
+
+    <!-- Mode pills -->
+    <string name="core_ui_mode_cloud_online">Cloud AI · online</string>
+    <string name="core_ui_mode_on_device_offline">On-device AI · offline</string>
+    <string name="core_ui_sample_data">Sample data</string>
+
+    <!-- Message captions -->
+    <string name="core_ui_caption_cloud">Cloud AI · figures computed by PesaLens</string>
+    <string name="core_ui_caption_on_device">On-device AI · figures computed by PesaLens</string>
+</resources>
