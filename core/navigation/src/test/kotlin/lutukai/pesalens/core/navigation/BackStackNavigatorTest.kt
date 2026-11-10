@@ -27,6 +27,23 @@ class BackStackNavigatorTest {
     }
 
     @Test
+    fun navigate_sameAsTop_isIgnored() {
+        navigator.navigate(spending)
+        navigator.navigate(Screen("spending"))
+
+        assertEquals(listOf<NavKey>(home, spending), backStack)
+    }
+
+    @Test
+    fun navigate_differentFromTop_pushes() {
+        navigator.navigate(spending)
+        navigator.navigate(settings)
+        navigator.navigate(spending)
+
+        assertEquals(listOf<NavKey>(home, spending, settings, spending), backStack)
+    }
+
+    @Test
     fun back_popsTop_butNeverBelowOneEntry() {
         navigator.navigate(spending)
 

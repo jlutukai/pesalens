@@ -14,6 +14,12 @@ import lutukai.pesalens.core.testing.fake.FakeSettingsRepository
 import lutukai.pesalens.feature.onboarding.impl.presentation.welcome.WelcomeEffect
 import lutukai.pesalens.feature.onboarding.impl.presentation.welcome.WelcomeIntent
 import lutukai.pesalens.feature.onboarding.impl.presentation.welcome.WelcomeViewModel
+import lutukai.pesalens.core.testing.fake.FakeNavigator
+import lutukai.pesalens.feature.modelsetup.api.ModelSetup
+import lutukai.pesalens.feature.modelsetup.api.ModelSetupOrigin
+import lutukai.pesalens.feature.onboarding.api.CloudConsent
+import lutukai.pesalens.feature.onboarding.api.ConsentOrigin
+import lutukai.pesalens.feature.onboarding.api.Welcome
 import org.junit.Rule
 import org.junit.Test
 
@@ -81,6 +87,31 @@ class WelcomeViewModelTest {
             assertEquals(WelcomeEffect.OpenAppLockSetup, awaitItem())
             expectNoEvents()
         }
+    }
+
+    @Test
+    fun useOnDevice_doubleTap_leavesSingleModelSetupOnStack() = runTest {
+        val vm = WelcomeViewModel(FakeSettingsRepository())
+        val navigator = FakeNavigator(Welcome)
+        vm.effects.test {
+            vm.onIntent(WelcomeIntent.UseOnDeviceInstead)
+            vm.onIntent(WelcomeIntent.UseOnDeviceInstead)
+            repeat(2) { if (awaitItem() == WelcomeEffect.OpenModelSetup) navigator.navigate(ModelSetup(ModelSetupOrigin.Welcome)) }
+        }
+        assertEquals(listOf(Welcome, ModelSetup(ModelSetupOrigin.Welcome)), navigator.stack)
+    }
+
+    @Test
+    fun getStarted_withoutConsent_repeatedTap_leavesSingleConsentOnStack() = runTest {
+        val vm = WelcomeViewModel(FakeSettingsRepository(AppSettings(cloudConsentGiven = false)))
+        val navigator = FakeNavigator(Welcome)
+        vm.effects.test {
+            repeat(2) {
+                vm.onIntent(WelcomeIntent.GetStarted)
+                if (awaitItem() == WelcomeEffect.OpenConsent) navigator.navigate(CloudConsent(ConsentOrigin.Welcome))
+            }
+        }
+        assertEquals(listOf(Welcome, CloudConsent(ConsentOrigin.Welcome)), navigator.stack)
     }
 
     private class CountingSettings(private val delegate: FakeSettingsRepository) : SettingsRepository by delegate {

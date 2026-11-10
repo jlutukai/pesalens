@@ -6,7 +6,7 @@ import androidx.navigation3.runtime.NavKey
 
 /** Back stack operations for features. The app shell owns the back stack and provides [LocalNavigator]. */
 interface Navigator {
-    /** Pushes [destination] on top of the back stack. */
+    /** Pushes [destination] on top of the back stack. A no-op when the top is already equal to [destination]. */
     fun navigate(destination: PesaDestination)
 
     /** Pops the top destination. The last remaining destination is never popped. */
@@ -26,6 +26,7 @@ interface Navigator {
 class BackStackNavigator(private val backStack: MutableList<NavKey>) : Navigator {
 
     override fun navigate(destination: PesaDestination) {
+        if (backStack.lastOrNull() == destination) return
         backStack.add(destination)
     }
 

@@ -13,6 +13,7 @@ class FakeNavigator(start: PesaDestination? = null) : Navigator {
         private set
 
     override fun navigate(destination: PesaDestination) {
+        if (entries.lastOrNull() == destination) return
         entries.add(destination)
     }
 
