@@ -14,6 +14,9 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
+import lutukai.pesalens.core.model.Money
+import lutukai.pesalens.core.ui.catalog.model.CategorySpendUi
 import lutukai.pesalens.core.designsystem.theme.PesaLensTheme
 import lutukai.pesalens.core.model.AssistantMode
 import lutukai.pesalens.core.ui.catalog.model.NoticeActionUi
@@ -84,6 +87,25 @@ class CatalogSemanticsTest {
         composeRule.onNodeWithText(summary).assertDoesNotExist()
         composeRule.onNodeWithText("Read chart as text").performClick()
         composeRule.onNodeWithText(summary).assertIsDisplayed()
+    }
+
+    @Test
+    fun spendingChart_zeroAmountCategory_rendersWithoutCrash() {
+        val withZero = spending.copy(
+            categories = (spending.categories + CategorySpendUi("empty", "Savings", Money.Zero, 0, 5)).toImmutableList(),
+        )
+        composeRule.setContent { PesaLensTheme(darkTheme = false) { SpendingChartCard(withZero, onCategoryClick = {}) } }
+        composeRule.onNodeWithText("Savings", substring = true).assertIsDisplayed()
+    }
+
+    @Test
+    fun spendingChart_zeroTotal_rendersWithoutCrash() {
+        val empty = spending.copy(
+            total = Money.Zero,
+            categories = spending.categories.map { it.copy(amount = Money.Zero, sharePercent = 0) }.toImmutableList(),
+        )
+        composeRule.setContent { PesaLensTheme(darkTheme = false) { SpendingChartCard(empty, onCategoryClick = {}) } }
+        composeRule.onNodeWithText("Rent").assertIsDisplayed()
     }
 
     @Test

@@ -8,6 +8,9 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -18,12 +21,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import lutukai.pesalens.core.designsystem.component.CalloutTone
-import lutukai.pesalens.core.designsystem.component.PesaCallout
 import lutukai.pesalens.core.designsystem.component.PesaCard
-import lutukai.pesalens.core.designsystem.component.PesaExpandable
+import lutukai.pesalens.core.designsystem.component.PesaDisclosureLink
 import lutukai.pesalens.core.designsystem.component.PesaKicker
 import lutukai.pesalens.core.designsystem.component.PesaPill
 import lutukai.pesalens.core.designsystem.component.PillTone
@@ -59,11 +61,13 @@ fun SpendingChartCard(spending: SpendingUi, onCategoryClick: (String) -> Unit, m
             PesaPill(stringResource(R.string.core_ui_spending_sample_tag), PillTone.Dashed, PesaIcons.Database, height = 24.dp)
         }
 
-        Row(
+        // A zero-weight segment is illegal and would be invisible anyway; rows still list every category.
+        val barCategories = spending.categories.filter { it.amount.minor > 0 }
+        if (barCategories.isNotEmpty()) Row(
             Modifier.fillMaxWidth().height(30.dp).clip(PesaLensTheme.shapes.bar),
             horizontalArrangement = Arrangement.spacedBy(2.dp),
         ) {
-            spending.categories.forEach { category ->
+            barCategories.forEach { category ->
                 val description = category.rowDescription()
                 Column(
                     Modifier
@@ -83,21 +87,30 @@ fun SpendingChartCard(spending: SpendingUi, onCategoryClick: (String) -> Unit, m
         }
 
         spending.insight?.let {
-            PesaCallout(
-                text = it,
-                icon = PesaIcons.Lightbulb,
-                tone = CalloutTone.Info,
-                footnote = stringResource(R.string.core_ui_spending_insight_footnote),
-            )
+            InsightBlock(it)
         }
 
-        PesaExpandable(stringResource(R.string.core_ui_spending_read_as_text), PesaIcons.TextAlignLeft) {
-            Text(
-                summary,
-                style = PesaLensTheme.type.meta.copy(lineHeight = 19.5.sp),
-                color = colors.textMuted,
-                modifier = Modifier.padding(start = 4.dp, end = 4.dp, bottom = 8.dp),
-            )
+        PesaDisclosureLink(stringResource(R.string.core_ui_spending_read_as_text), PesaIcons.TextAlignLeft) {
+            Text(summary, style = PesaLensTheme.type.meta.copy(lineHeight = 19.5.sp), color = colors.textMuted)
+        }
+    }
+}
+
+/** Borderless tintSubtle block: lightbulb, insight text and the "computed by the app" footnote. */
+@Composable
+private fun InsightBlock(text: String) {
+    val colors = PesaLensTheme.colors
+    Surface(Modifier.fillMaxWidth(), shape = PesaLensTheme.shapes.tile, color = colors.tintSubtle) {
+        Row(Modifier.padding(12.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.Top) {
+            Icon(PesaIcons.Lightbulb, contentDescription = null, tint = colors.accentText, modifier = Modifier.size(18.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                Text(text, style = PesaLensTheme.type.bodySmall, color = colors.text)
+                Text(
+                    stringResource(R.string.core_ui_spending_insight_footnote),
+                    style = PesaLensTheme.type.kicker.copy(letterSpacing = TextUnit.Unspecified),
+                    color = colors.textMuted,
+                )
+            }
         }
     }
 }
