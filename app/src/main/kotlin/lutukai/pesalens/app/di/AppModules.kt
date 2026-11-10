@@ -1,5 +1,9 @@
 package lutukai.pesalens.app.di
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import lutukai.pesalens.app.AppLockSession
 import lutukai.pesalens.core.data.di.dataModule
 import lutukai.pesalens.core.ui.message.UserMessageQueue
 import lutukai.pesalens.core.ui.message.UserMessageSink
@@ -13,15 +17,19 @@ import org.koin.core.module.Module
 import org.koin.dsl.bind
 import org.koin.dsl.module
 
-/** The one queue features post messages to (as [UserMessageSink]) and the shell's snackbar host collects. */
-private val userMessageModule = module {
+/**
+ * The shell's process-wide state: the one queue features post messages to (as [UserMessageSink]) and the snackbar host
+ * collects, and the app lock session, which records on the main thread when a lock is owed.
+ */
+private val shellModule = module {
     single { UserMessageQueue() } bind UserMessageSink::class
+    single { AppLockSession(get(), CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)) }
 }
 
-/** Every Koin module the app runs with: data bindings, the message queue, and each feature's ViewModels and entries. */
+/** Every Koin module the app runs with: data bindings, the shell's state, and each feature's ViewModels and entries. */
 val appModules: List<Module> = listOf(
     dataModule,
-    userMessageModule,
+    shellModule,
     onboardingFeatureModule,
     appLockFeatureModule,
     assistantFeatureModule,

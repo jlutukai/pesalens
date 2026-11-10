@@ -22,6 +22,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
@@ -125,8 +126,9 @@ private fun SystemBarsFor(darkTheme: Boolean) {
 @Composable
 private fun UserMessageHost(queue: UserMessageQueue, modifier: Modifier = Modifier) {
     val hostState = remember { SnackbarHostState() }
-    val resources = LocalResources.current
-    LaunchedEffect(queue, resources) {
+    // Read per message, so a configuration change doesn't restart the collector and cut off the one showing.
+    val resources by rememberUpdatedState(LocalResources.current)
+    LaunchedEffect(queue) {
         queue.messages.collect { message -> hostState.showSnackbar(message.resolve(resources)) }
     }
     PesaSnackbarHost(hostState, modifier)

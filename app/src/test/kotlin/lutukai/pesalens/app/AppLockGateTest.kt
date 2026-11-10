@@ -1,12 +1,16 @@
 package lutukai.pesalens.app
 
 import android.app.Application
-import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.activity.ComponentActivity
+import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LifecycleRegistry
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import lutukai.pesalens.core.model.AppLockState
 import lutukai.pesalens.core.model.LockMethod
 import lutukai.pesalens.core.testing.fake.FakeAppLockRepository
@@ -18,81 +22,86 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
-/** A plain application: these tests hand the gate its dependencies, so the app's Koin graph isn't started. */
+/** A plain application: these tests hand the gate its session, so the app's Koin graph isn't started. */
 @RunWith(RobolectricTestRunner::class)
 @Config(application = Application::class)
 class AppLockGateTest {
 
     @get:Rule
-    val composeRule = createComposeRule()
+    val composeRule = createAndroidComposeRule<ComponentActivity>()
 
     private val process = FakeProcess()
+    private val session = AppLockSession(
+        FakeAppLockRepository(AppLockState(method = LockMethod.Pin)),
+        CoroutineScope(Dispatchers.Main.immediate),
+    )
     private val navigator = FakeNavigator(Assistant)
 
+    @BeforeTest
+    fun startInForeground() {
+        process.registry.currentState = Lifecycle.State.RESUMED
+        session.start(process.lifecycle)
+    }
+
     @Test
-    fun launch_withPin_doesNotLock() {
-        show(LockMethod.Pin)
+    fun nothingOwed_doesNotLock() {
+        show()
 
         assertEquals(listOf(Assistant), navigator.stack)
     }
 
     @Test
-    fun returnFromBackground_withPin_pushesLockedOnce() {
-        show(LockMethod.Pin)
+    fun lockOwed_pushesLockedOnce_andConsumesIt() {
+        show()
 
         backgroundAndReturn()
-        backgroundAndReturn()
-
         assertEquals(listOf(Assistant, Locked), navigator.stack)
-    }
-
-    @Test
-    fun returnFromBackground_withBiometric_locks() {
-        show(LockMethod.Biometric)
+        assertFalse(session.lockOwed.value)
 
         backgroundAndReturn()
-
         assertEquals(listOf(Assistant, Locked), navigator.stack)
+        assertFalse(session.lockOwed.value)
     }
 
+    /** A gate in an activity created after the app went to the background, as when the old one was destroyed. */
     @Test
-    fun returnFromBackground_withoutLock_staysPut() {
-        show(LockMethod.None)
-
-        backgroundAndReturn()
-
-        assertEquals(listOf(Assistant), navigator.stack)
-    }
-
-    @Test
-    fun lockMethod_isReadOnReturn_notWhenTheGateStarted() {
-        val lock = show(LockMethod.Pin)
-
+    fun lockOwedBeforeTheGateStarted_locks() {
         process.registry.currentState = Lifecycle.State.CREATED
-        lock.stateFlow.value = AppLockState(method = LockMethod.None)
         process.registry.currentState = Lifecycle.State.RESUMED
-        composeRule.waitForIdle()
 
-        assertEquals(listOf(Assistant), navigator.stack)
+        show()
+
+        assertEquals(listOf(Assistant, Locked), navigator.stack)
+        assertFalse(session.lockOwed.value)
     }
 
-    private fun show(method: LockMethod): FakeAppLockRepository {
-        val lock = FakeAppLockRepository(AppLockState(method = method))
-        // The process is already in the foreground when the shell first composes.
-        process.registry.currentState = Lifecycle.State.RESUMED
-        composeRule.setContent { AppLockGate(navigator, lock, process.lifecycle) }
+    /** Locked joins the back stack only once the activity is started again, not while it sits stopped. */
+    @Test
+    fun lockOwedWhileActivityStopped_waitsUntilItStarts() {
+        show()
+        val scenario = composeRule.activityRule.scenario
+
+        scenario.moveToState(Lifecycle.State.CREATED)
+        process.registry.currentState = Lifecycle.State.CREATED
         composeRule.waitForIdle()
-        return lock
+        assertEquals(listOf(Assistant), navigator.stack)
+        assertTrue(session.lockOwed.value)
+
+        scenario.moveToState(Lifecycle.State.RESUMED)
+        process.registry.currentState = Lifecycle.State.RESUMED
+        composeRule.waitForIdle()
+        assertEquals(listOf(Assistant, Locked), navigator.stack)
+        assertFalse(session.lockOwed.value)
+    }
+
+    private fun show() {
+        composeRule.setContent { AppLockGate(navigator, session) }
+        composeRule.waitForIdle()
     }
 
     private fun backgroundAndReturn() {
         process.registry.currentState = Lifecycle.State.CREATED
         process.registry.currentState = Lifecycle.State.RESUMED
         composeRule.waitForIdle()
-    }
-
-    private class FakeProcess : LifecycleOwner {
-        val registry = LifecycleRegistry.createUnsafe(this)
-        override val lifecycle: Lifecycle get() = registry
     }
 }

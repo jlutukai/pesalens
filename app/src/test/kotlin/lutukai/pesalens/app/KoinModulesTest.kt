@@ -5,6 +5,7 @@ import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlinx.coroutines.CoroutineScope
 import lutukai.pesalens.app.di.appModules
 import lutukai.pesalens.core.navigation.PesaDestination
 import lutukai.pesalens.core.navigation.PesaPanes
@@ -47,10 +48,14 @@ class KoinModulesTest {
     @AfterTest
     fun tearDown() = app.close()
 
-    /** Static check: every constructor dependency of every definition is bound, apart from the destination origins. */
+    /**
+     * Static check: every constructor dependency of every definition is bound, apart from the destination origins and
+     * the app-wide scope [AppLockSession]'s definition creates for it.
+     */
     @Test
     fun appModules_verify() {
         module { includes(appModules) }.verify(
+            extraTypes = listOf(CoroutineScope::class),
             injections = injectedParameters(
                 definition<CloudConsentViewModel>(ConsentOrigin::class),
                 definition<AppLockSetupViewModel>(LockSetupOrigin::class),

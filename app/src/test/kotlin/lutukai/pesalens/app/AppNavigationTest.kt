@@ -100,15 +100,36 @@ class AppNavigationTest {
 
     @Test
     fun background_withPin_showsLocked() {
-        runBlocking { GlobalContext.get().get<AppLockRepository>().setPin(Pin) }
+        setPin()
 
         backgroundAndReturn()
         backgroundAndReturn()
-        composeRule.onNodeWithText("PesaLens is locked").assertIsDisplayed()
+        composeRule.onNodeWithText(LockedTitle).assertIsDisplayed()
 
-        // Locked was pushed once, so unlocking returns to where the user was.
-        Pin.forEach { digit -> composeRule.onNodeWithText(digit.toString()).performClick() }
+        unlockReturnsToWelcome()
+    }
+
+    /** The activity is destroyed while the app is away (low memory, "Don't keep activities"); the process survives. */
+    @Test
+    fun activityRecreatedWhileBackgrounded_withPin_showsLocked() {
+        setPin()
+
+        backgroundAndReturn(recreateWhileAway = true)
+        composeRule.onNodeWithText(LockedTitle).assertIsDisplayed()
+
+        unlockReturnsToWelcome()
+    }
+
+    /** A new activity in a process that has not been to the background, as at launch, owes no lock. */
+    @Test
+    fun coldStart_withNoPriorStop_doesNotLock() {
+        setPin()
+
+        composeRule.runOnUiThread { processLifecycle().currentState = Lifecycle.State.RESUMED }
+        composeRule.activityRule.scenario.recreate()
+
         composeRule.onNodeWithText("Get started").assertIsDisplayed()
+        composeRule.onNodeWithText(LockedTitle).assertDoesNotExist()
     }
 
     private fun finishOnboarding() {
@@ -118,21 +139,39 @@ class AppNavigationTest {
         composeRule.onNodeWithContentDescription(Composer).assertIsDisplayed()
     }
 
-    /** Drives the process lifecycle from whatever state an earlier test left it in: foreground, background, foreground. */
-    private fun backgroundAndReturn() {
-        val process = ProcessLifecycleOwner.get().lifecycle as LifecycleRegistry
-        composeRule.runOnUiThread {
-            process.currentState = Lifecycle.State.RESUMED
-            process.currentState = Lifecycle.State.CREATED
-            process.currentState = Lifecycle.State.RESUMED
-        }
+    private fun setPin() = runBlocking { GlobalContext.get().get<AppLockRepository>().setPin(Pin) }
+
+    /** Unlocking pops Locked back to Welcome, so exactly one Locked was on the back stack. */
+    private fun unlockReturnsToWelcome() {
+        Pin.forEach { digit -> composeRule.onNodeWithText(digit.toString()).performClick() }
+        composeRule.onNodeWithText("Get started").assertIsDisplayed()
+        composeRule.onNodeWithText(LockedTitle).assertDoesNotExist()
+    }
+
+    /**
+     * Leaves and returns as on a device: the activity stops, then the process (ON_STOP); on return the activity starts,
+     * then the process (ON_START). The process state is set outright, so whatever an earlier test left in the
+     * process-wide owner doesn't matter.
+     */
+    private fun backgroundAndReturn(recreateWhileAway: Boolean = false) {
+        val scenario = composeRule.activityRule.scenario
+        val process = processLifecycle()
+        composeRule.runOnUiThread { process.currentState = Lifecycle.State.RESUMED }
+        scenario.moveToState(Lifecycle.State.CREATED)
+        composeRule.runOnUiThread { process.currentState = Lifecycle.State.CREATED }
+        if (recreateWhileAway) scenario.recreate()
+        scenario.moveToState(Lifecycle.State.RESUMED)
+        composeRule.runOnUiThread { process.currentState = Lifecycle.State.RESUMED }
         composeRule.waitForIdle()
     }
+
+    private fun processLifecycle() = ProcessLifecycleOwner.get().lifecycle as LifecycleRegistry
 
     private companion object {
         const val Composer = "Ask about your money"
         const val SpendingQuestion = "Where did my money go this month?"
         const val Draft = "Can I afford a laptop?"
         const val Pin = "2580"
+        const val LockedTitle = "PesaLens is locked"
     }
 }
