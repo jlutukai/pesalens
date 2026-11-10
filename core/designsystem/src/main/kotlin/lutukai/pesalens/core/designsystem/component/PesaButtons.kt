@@ -47,7 +47,7 @@ enum class PesaButtonStyle {
     Warn,
 }
 
-private const val DISABLED_ALPHA = 0.45f
+internal const val DISABLED_ALPHA = 0.45f
 
 private val LargeHeight = 52.dp
 
