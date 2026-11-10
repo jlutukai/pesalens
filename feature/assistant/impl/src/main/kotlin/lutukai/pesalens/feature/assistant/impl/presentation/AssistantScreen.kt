@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
@@ -25,9 +24,18 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -83,24 +91,45 @@ fun AssistantScreen(viewModel: AssistantViewModel = koinViewModel()) {
             AssistantEffect.OpenCloudConsent -> navigator.navigate(CloudConsent(ConsentOrigin.Assistant))
         }
     }
-    AssistantContent(state = state, onIntent = viewModel::onIntent)
+    val onIntent = remember(viewModel) { viewModel::onIntent }
+    AssistantContent(state = state, onIntent = onIntent)
 }
 
 @Composable
 fun AssistantContent(state: AssistantUiState, onIntent: (AssistantIntent) -> Unit, modifier: Modifier = Modifier) {
     val colors = PesaLensTheme.colors
     val listState = rememberLazyListState()
-    var knownSize by remember { mutableIntStateOf(0) }
-    LaunchedEffect(state.items.size) {
-        // On entry a conversation opens at its end; afterwards only a growing list scrolls.
-        if (state.items.size > knownSize) listState.scrollToEnd(lastIndex = state.items.size + 1)
-        knownSize = state.items.size
+    val items = state.items
+    val busy = state.busy
+    val currentMonth = state.currentMonth
+    val modelReady = state.modelReady
+    val mode = state.mode
+    val lastId = items.lastOrNull()?.id
+
+    // The last item id already scrolled to. Ids are never reused, so a reply that replaces the Thinking item (same
+    // size, new id) still scrolls; saved so a rotation doesn't jump.
+    var handledId by rememberSaveable { mutableLongStateOf(-1L) }
+    LaunchedEffect(lastId, items.size) {
+        if (lastId != null && lastId != handledId) listState.scrollToEnd(lastIndex = items.size + 1)
+        if (lastId != null) handledId = lastId
     }
+
+    // Keep the end in view when the keyboard opens, if the list was at its end before it did.
+    val imeOpen = WindowInsets.ime.getBottom(LocalDensity.current) > 0
+    val imeNow by rememberUpdatedState(imeOpen)
+    var atEnd by remember { mutableStateOf(true) }
+    LaunchedEffect(listState) {
+        snapshotFlow { !listState.canScrollForward }.collect { if (!imeNow) atEnd = it }
+    }
+    LaunchedEffect(imeOpen) {
+        if (imeOpen && atEnd && items.isNotEmpty()) listState.scrollToEnd(lastIndex = items.size + 1)
+    }
+
     // The last item that isn't the user's: the only one that offers follow-up chips (prototype lastBot).
-    val lastBotId = state.items.lastOrNull { it !is ChatItem.User }?.id
+    val lastBotId = items.lastOrNull { it !is ChatItem.User }?.id
 
     Column(modifier.fillMaxSize().background(colors.background).windowInsetsPadding(WindowInsets.safeDrawing)) {
-        TopBar(state.mode, onSettings = { onIntent(AssistantIntent.OpenSettings) })
+        TopBar(mode, onSettings = { onIntent(AssistantIntent.OpenSettings) })
         LazyColumn(
             Modifier.weight(1f).fillMaxWidth(),
             state = listState,
@@ -108,26 +137,26 @@ fun AssistantContent(state: AssistantUiState, onIntent: (AssistantIntent) -> Uni
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            item(key = "banner") { ColumnSlot { ModeBanner(state.mode) } }
+            item(key = "banner") { ColumnSlot { ModeBanner(mode) } }
             item(key = "greeting") {
                 ColumnSlot {
                     Column(verticalArrangement = Arrangement.spacedBy(PesaSpacing.sm)) {
                         AssistantBubble(stringResource(R.string.assistant_greeting))
-                        if (state.items.isEmpty()) Chips(IntroSuggestions, onIntent)
+                        if (items.isEmpty()) Chips(IntroSuggestions, onIntent)
                     }
                 }
             }
-            items(state.items, key = { it.id }) { item ->
+            items(items, key = { it.id }) { item ->
                 ColumnSlot {
                     Column(verticalArrangement = Arrangement.spacedBy(PesaSpacing.sm)) {
-                        ChatItemView(item, state, onIntent)
+                        ChatItemView(item, busy, currentMonth, modelReady, onIntent)
                         item.captionMode()?.let { MessageCaption(it) }
                         if (item.id == lastBotId) Chips(suggestionsAfter(item), onIntent)
                     }
                 }
             }
         }
-        Composer(state, onIntent)
+        Composer(state.draft, busy, onIntent)
     }
 
     when (val dialog = state.dialog) {
@@ -178,6 +207,7 @@ private fun Suggestion.label(): String = when (this) {
 }
 
 /** 64dp bar: title over the mode pill and "Sample data", 48dp settings button; bottom 1dp border. */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun TopBar(mode: AssistantMode, onSettings: () -> Unit) {
     val colors = PesaLensTheme.colors
@@ -185,18 +215,22 @@ private fun TopBar(mode: AssistantMode, onSettings: () -> Unit) {
     Row(
         Modifier
             .fillMaxWidth()
-            .height(64.dp)
+            .heightIn(min = 64.dp)
             .drawBehind {
                 val w = 1.dp.toPx()
                 drawLine(border, Offset(0f, size.height - w / 2), Offset(size.width, size.height - w / 2), w)
             }
-            .padding(start = PesaSpacing.xl, end = 6.dp),
+            .padding(start = PesaSpacing.xl, end = 6.dp, top = PesaSpacing.sm, bottom = PesaSpacing.sm),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(PesaSpacing.sm),
     ) {
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
             Text(stringResource(R.string.assistant_title), style = PesaLensTheme.type.titleSmall, color = colors.text)
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            FlowRow(
+                verticalArrangement = Arrangement.spacedBy(PesaSpacing.xs),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                itemVerticalAlignment = Alignment.CenterVertically,
+            ) {
                 ModePill(mode)
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(PesaSpacing.xs)) {
                     Icon(PesaIcons.Database, contentDescription = null, tint = colors.textMuted, modifier = Modifier.size(14.dp))
@@ -220,7 +254,7 @@ private fun TopBar(mode: AssistantMode, onSettings: () -> Unit) {
 
 /** Pinned bottom bar: top border, background colour; the field matches the message column's width. */
 @Composable
-private fun Composer(state: AssistantUiState, onIntent: (AssistantIntent) -> Unit) {
+private fun Composer(draft: String, busy: Boolean, onIntent: (AssistantIntent) -> Unit) {
     val colors = PesaLensTheme.colors
     val border = colors.border
     Box(
@@ -236,10 +270,10 @@ private fun Composer(state: AssistantUiState, onIntent: (AssistantIntent) -> Uni
     ) {
         val placeholder = stringResource(R.string.assistant_composer_placeholder)
         PesaComposer(
-            value = state.draft,
+            value = draft,
             onValueChange = { onIntent(AssistantIntent.DraftChanged(it)) },
             onSend = { onIntent(AssistantIntent.Send) },
-            sendEnabled = state.draft.isNotBlank() && !state.busy,
+            sendEnabled = draft.isNotBlank() && !busy,
             placeholder = placeholder,
             sendContentDescription = stringResource(R.string.assistant_send),
             modifier = Modifier.widthIn(max = ColumnMaxWidth),

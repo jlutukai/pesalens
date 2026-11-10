@@ -3,7 +3,12 @@ package lutukai.pesalens.feature.assistant.impl
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.hasScrollAction
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeDown
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -191,5 +196,45 @@ class AssistantContentTest {
         show(state())
         compose.onNodeWithContentDescription("Settings").performClick()
         assertEquals(listOf<AssistantIntent>(AssistantIntent.OpenSettings), intents)
+    }
+
+    @Test
+    fun budgetControls_whileBusy_sendNoIntents() {
+        show(
+            state(ChatItem.Budget(1, AssistantMode.Cloud, PreviewFixtures.budget())).copy(busy = true),
+        )
+        compose.onNodeWithText("Review budget").performClick()
+        compose.onNodeWithText("Cancel").performClick()
+        compose.onNodeWithContentDescription("Increase Rent by KSh 500").performClick()
+        assertEquals(emptyList<AssistantIntent>(), intents)
+    }
+
+    @Test
+    fun budgetCard_whileBusy_listStillScrolls() {
+        val items = (1L..3L).map { ChatItem.Budget(it, AssistantMode.Cloud, PreviewFixtures.budget()) }
+        show(state(*items.toTypedArray()).copy(busy = true))
+        compose.waitForIdle()
+        // The conversation opens at its end, so the greeting is off screen; dragging over a card must scroll back up.
+        compose.onNodeWithText("Hi! I can show", substring = true).assertIsNotDisplayed()
+        repeat(8) {
+            compose.onNode(hasScrollAction()).performTouchInput { swipeDown() }
+        }
+        compose.onNodeWithText("Hi! I can show", substring = true).assertIsDisplayed()
+    }
+
+    @Test
+    fun newReply_replacingThinking_scrollsToEnd() {
+        val history = (1L..4L).map { ChatItem.Budget(it, AssistantMode.Cloud, PreviewFixtures.budget()) }
+        var current by mutableStateOf(state(*history.toTypedArray(), ChatItem.Thinking(5, ThinkingLabel.Calculating)))
+        compose.setContent { PesaLensTheme(darkTheme = false) { AssistantContent(current, {}) } }
+        compose.waitForIdle()
+        // Same size, new last id: the reply replaces the Thinking item.
+        current = state(
+            *history.toTypedArray(),
+            ChatItem.SpendingResult(6, AssistantMode.Cloud, PreviewFixtures.novemberSpending, PreviewFixtures.novemberSpending.categories[1]),
+        )
+        compose.waitForIdle()
+        compose.onNodeWithText("Show food and groceries").assertIsDisplayed()
+        compose.onNodeWithText("Cloud AI · figures computed by PesaLens").assertExists()
     }
 }

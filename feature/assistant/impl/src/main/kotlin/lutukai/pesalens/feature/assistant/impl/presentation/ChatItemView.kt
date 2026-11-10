@@ -6,10 +6,12 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.disabled
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.datetime.YearMonth
 import lutukai.pesalens.core.ui.catalog.AffordabilityCard
 import lutukai.pesalens.core.ui.catalog.AffordabilityDetailsCard
 import lutukai.pesalens.core.ui.catalog.AssistantBubble
@@ -28,10 +30,17 @@ import lutukai.pesalens.feature.assistant.impl.R
 
 /** Cards stop growing at this width on wide screens. */
 private val CardMaxWidth = 600.dp
+private const val BusyAlpha = 0.6f
 
 /** One conversation entry; the caption and follow-up chips belong to the caller's group. */
 @Composable
-fun ChatItemView(item: ChatItem, state: AssistantUiState, onIntent: (AssistantIntent) -> Unit) {
+fun ChatItemView(
+    item: ChatItem,
+    busy: Boolean,
+    currentMonth: YearMonth,
+    modelReady: Boolean,
+    onIntent: (AssistantIntent) -> Unit,
+) {
     when (item) {
         is ChatItem.User -> UserBubble(item.text.asString())
         is ChatItem.Thinking -> ThinkingBubble(stringResource(item.label.labelRes()))
@@ -60,19 +69,20 @@ fun ChatItemView(item: ChatItem, state: AssistantUiState, onIntent: (AssistantIn
             )
         }
         is ChatItem.Budget -> CardSlot {
-            BusyLock(state.busy) {
-                BudgetEditorCard(
-                    ui = item.ui,
-                    onIncomeChange = { onIntent(AssistantIntent.IncomeChanged(item.id, it)) },
-                    onLineChange = { index, digits -> onIntent(AssistantIntent.LineChanged(item.id, index, digits)) },
-                    onLineStep = { index, dir -> onIntent(AssistantIntent.LineStep(item.id, index, dir)) },
-                    onCancel = { onIntent(AssistantIntent.CancelBudget(item.id)) },
-                    onReview = { onIntent(AssistantIntent.ReviewBudget(item.id)) },
-                )
-            }
+            // While busy the ViewModel ignores edits; the card is dimmed and its callbacks do nothing. No overlay, so
+            // drags over the card still scroll the list.
+            BudgetEditorCard(
+                ui = item.ui,
+                onIncomeChange = { if (!busy) onIntent(AssistantIntent.IncomeChanged(item.id, it)) },
+                onLineChange = { index, digits -> if (!busy) onIntent(AssistantIntent.LineChanged(item.id, index, digits)) },
+                onLineStep = { index, dir -> if (!busy) onIntent(AssistantIntent.LineStep(item.id, index, dir)) },
+                onCancel = { if (!busy) onIntent(AssistantIntent.CancelBudget(item.id)) },
+                onReview = { if (!busy) onIntent(AssistantIntent.ReviewBudget(item.id)) },
+                modifier = if (busy) Modifier.alpha(BusyAlpha).semantics { disabled() } else Modifier,
+            )
         }
         is ChatItem.BudgetSaved -> CardSlot { BudgetSavedCard(item.month, item.summary.asString()) }
-        is ChatItem.Notice -> CardSlot { NoticeCard(item, state, onIntent) }
+        is ChatItem.Notice -> CardSlot { NoticeCard(item, currentMonth, modelReady, onIntent) }
     }
 }
 
@@ -82,27 +92,10 @@ private fun CardSlot(content: @Composable () -> Unit) {
     Box(Modifier.widthIn(max = CardMaxWidth).fillMaxWidth()) { content() }
 }
 
-/** Dims [content] and swallows touches while [locked]; the ViewModel ignores edits while busy, so the card shows it. */
 @Composable
-private fun BusyLock(locked: Boolean, content: @Composable () -> Unit) {
-    Box {
-        Box(if (locked) Modifier.alpha(0.6f) else Modifier) { content() }
-        if (locked) {
-            Box(
-                Modifier.matchParentSize().pointerInput(Unit) {
-                    awaitPointerEventScope {
-                        while (true) awaitPointerEvent().changes.forEach { it.consume() }
-                    }
-                },
-            )
-        }
-    }
-}
-
-@Composable
-private fun NoticeCard(item: ChatItem.Notice, state: AssistantUiState, onIntent: (AssistantIntent) -> Unit) {
+private fun NoticeCard(item: ChatItem.Notice, currentMonth: YearMonth, modelReady: Boolean, onIntent: (AssistantIntent) -> Unit) {
     val title = when (item.kind) {
-        NoticeKind.NoData -> stringResource(CoreUiR.string.core_ui_notice_no_data_title, (item.month ?: state.currentMonth).formatLong())
+        NoticeKind.NoData -> stringResource(CoreUiR.string.core_ui_notice_no_data_title, (item.month ?: currentMonth).formatLong())
         NoticeKind.Unsupported -> stringResource(CoreUiR.string.core_ui_notice_unsupported_title)
         NoticeKind.ModelUnavailable -> stringResource(CoreUiR.string.core_ui_notice_model_unavailable_title)
         NoticeKind.CloudOffline -> stringResource(CoreUiR.string.core_ui_notice_offline_title)
@@ -119,8 +112,8 @@ private fun NoticeCard(item: ChatItem.Notice, state: AssistantUiState, onIntent:
             NoticeKind.SaveFailed -> CoreUiR.string.core_ui_notice_save_failed_body
         },
     )
-    val actions = noticeActions(item.kind, item.mode, state.modelReady)
-    val month = state.currentMonth.formatLong()
+    val actions = noticeActions(item.kind, item.mode, modelReady)
+    val month = currentMonth.formatLong()
     val uiActions = actions.map { NoticeActionUi(stringResource(it.labelRes(item.kind), month), it.key()) }
     StatusNotice(
         kind = item.kind,
