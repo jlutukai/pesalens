@@ -15,6 +15,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
+import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirectiveWithTwoPanesOnMediumWidth
 import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -86,7 +89,7 @@ fun PesaLensApp() {
  * The back stack, its [LocalNavigator] and the [NavDisplay]. [startDestination] only seeds a new back stack: the stack
  * is saved and restored from then on, so later settings changes never replace it.
  */
-@OptIn(KoinExperimentalAPI::class)
+@OptIn(KoinExperimentalAPI::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 private fun AppNavigation(startDestination: PesaDestination) {
     val backStack = rememberNavBackStack(startDestination)
@@ -101,7 +104,10 @@ private fun AppNavigation(startDestination: PesaDestination) {
             ),
             sceneStrategies = listOf(
                 rememberAdaptiveOverlaySceneStrategy<NavKey>(),
-                rememberListDetailSceneStrategy<NavKey>(),
+                // Medium widths (600-839dp, e.g. an unfolded foldable) split too; the default directive keeps one pane.
+                rememberListDetailSceneStrategy<NavKey>(
+                    directive = calculatePaneScaffoldDirectiveWithTwoPanesOnMediumWidth(currentWindowAdaptiveInfoV2()),
+                ),
             ),
             entryProvider = koinEntryProvider<NavKey>(),
         )

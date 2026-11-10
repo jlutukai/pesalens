@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
@@ -67,8 +68,10 @@ fun BudgetEditorCard(
             Text(stringResource(R.string.core_ui_budget_hint), style = type.meta, color = colors.textMuted)
         }
 
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(stringResource(R.string.core_ui_budget_income_label), style = type.bodySmall, color = colors.text, modifier = Modifier.weight(1f))
+        val incomeLabel: @Composable (Modifier) -> Unit = { m ->
+            Text(stringResource(R.string.core_ui_budget_income_label), style = type.bodySmall, color = colors.text, modifier = m)
+        }
+        val incomeField: @Composable () -> Unit = {
             PesaAmountField(
                 value = ui.income.shillingDigits(),
                 onValueChange = onIncomeChange,
@@ -82,6 +85,17 @@ fun BudgetEditorCard(
                 textStyle = type.body.copy(fontFeatureSettings = "tnum"),
                 prefixStyle = type.meta,
             )
+        }
+        if (LocalDensity.current.fontScale >= StackedFontScale) {
+            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp), horizontalAlignment = Alignment.End) {
+                incomeLabel(Modifier.fillMaxWidth())
+                incomeField()
+            }
+        } else {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                incomeLabel(Modifier.weight(1f))
+                incomeField()
+            }
         }
 
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {

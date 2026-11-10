@@ -3,6 +3,7 @@ package lutukai.pesalens.app
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -88,6 +89,32 @@ class AppNavigationTest {
             },
         )
         finishOnboarding()
+
+        composeRule.onNodeWithText(SpendingQuestion).performClick()
+        composeRule.onNodeWithText("Show food and groceries").performClick()
+
+        // Both panes at once: on a phone the category would replace the chat.
+        composeRule.onNodeWithContentDescription(Composer).assertIsDisplayed()
+        // The screen sets this label in capitals.
+        composeRule.onNodeWithText("Category total", ignoreCase = true).assertIsDisplayed()
+    }
+
+    @Test
+    @Config(qualifiers = ScreenshotSizes.Foldable)
+    fun foldableWidth_categoryOpensBesideChat() {
+        loadKoinModules(
+            module {
+                single<FinanceRepository> { FakeFinanceRepository() }
+                single<IntentInterpreter> {
+                    FakeIntentInterpreter().apply { next = Interpretation.Spending(YearMonth(2026, 11)) }
+                }
+            },
+        )
+        finishOnboarding()
+        // The lock-setup snackbar would cover the chips at this height.
+        composeRule.waitUntil(timeoutMillis = 15_000) {
+            composeRule.onAllNodesWithText("You can turn on app lock later in Settings.").fetchSemanticsNodes().isEmpty()
+        }
 
         composeRule.onNodeWithText(SpendingQuestion).performClick()
         composeRule.onNodeWithText("Show food and groceries").performClick()

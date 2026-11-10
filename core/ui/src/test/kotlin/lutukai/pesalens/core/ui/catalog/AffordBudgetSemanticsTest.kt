@@ -16,6 +16,7 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
@@ -24,6 +25,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.datetime.YearMonth
 import lutukai.pesalens.core.designsystem.theme.PesaLensTheme
 import lutukai.pesalens.core.model.ModelStatus
@@ -37,6 +39,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 @RunWith(RobolectricTestRunner::class)
 @Config(qualifiers = "w412dp-h2300dp-xhdpi")
@@ -278,6 +281,11 @@ class AffordBudgetSemanticsTest {
         composeRule.onNodeWithContentDescription("Decrease Food and groceries by KSh 500").assertIsDisplayed().assertHeightIsAtLeast(48.dp)
         composeRule.onNodeWithContentDescription("Increase Food and groceries by KSh 500").assertIsDisplayed().assertHeightIsAtLeast(48.dp)
         composeRule.onNodeWithContentDescription("Food and groceries limit in shillings").assertIsDisplayed().assertHeightIsAtLeast(48.dp)
+        // The name sits on its own full-width line: a mid-word break would make it wrap, so it must be one line tall.
+        // The row sets a 17.5sp line height, 35dp at 2x; two lines would be 70dp.
+        val label = composeRule.onNodeWithText("Food and groceries").assertIsDisplayed().getBoundsInRoot()
+        val oneLine = with(Density(density = 1f, fontScale = 2f)) { 17.5.sp.toDp() }
+        assertTrue((label.bottom - label.top) < oneLine * 1.5f, "label wrapped: height ${label.bottom - label.top}, one line is $oneLine")
     }
 
     @Test
