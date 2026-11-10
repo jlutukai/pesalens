@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Choose -->
+    <string name="applock_choose_title">Keep your finances private</string>
+    <string name="applock_choose_body">Ask to unlock PesaLens each time it opens.</string>
+    <string name="applock_option_biometric_title">Fingerprint or face unlock</string>
+    <string name="applock_option_biometric_subtitle">Uses the biometrics already on this phone</string>
+    <string name="applock_option_pin_title">Set a 4-digit PIN</string>
+    <string name="applock_option_pin_subtitle">Only used for PesaLens</string>
+    <string name="applock_option_off_title">Turn off app lock</string>
+    <string name="applock_option_off_subtitle">%1$s is on now</string>
+    <string name="applock_status_pin">PIN</string>
+    <string name="applock_status_biometric">Fingerprint or face unlock</string>
+    <string name="applock_skip">Skip for now</string>
+    <string name="applock_cancel">Cancel</string>
+    <string name="applock_back">Back</string>
+
+    <!-- PIN -->
+    <string name="applock_pin_create_title">Create a 4-digit PIN</string>
+    <string name="applock_pin_create_subtitle">Avoid easy patterns like 1234 or 0000.</string>
+    <string name="applock_pin_confirm_title">Confirm your PIN</string>
+    <string name="applock_pin_confirm_subtitle">Enter the same PIN again.</string>
+    <string name="applock_error_weak">That PIN is easy to guess. Choose another.</string>
+    <string name="applock_error_mismatch">PINs didn\'t match. Start again.</string>
+    <string name="applock_delete_digit">Delete digit</string>
+
+    <!-- Locked -->
+    <string name="applock_locked_title">PesaLens is locked</string>
+    <string name="applock_locked_sub_pin">Enter your PIN</string>
+    <string name="applock_locked_sub_biometric">Use fingerprint or face unlock</string>
+    <string name="applock_error_incorrect">Incorrect PIN. Try again.</string>
+    <!-- not in prototype -->
+    <string name="applock_error_cooldown">Too many attempts. Try again in %1$d seconds.</string>
+    <string name="applock_tap_to_unlock">Tap to unlock</string>
+    <string name="applock_unlock_biometric_description">Unlock with fingerprint or face</string>
+
+    <!-- Messages -->
+    <string name="applock_message_pin_set">PIN set. PesaLens will ask for it when it opens.</string>
+    <string name="applock_message_skipped">You can turn on app lock later in Settings.</string>
+    <string name="applock_message_off">App lock turned off.</string>
+    <string name="applock_message_biometric_on">Fingerprint or face unlock is on.</string>
+    <!-- not in prototype -->
+    <string name="applock_message_biometric_unavailable">Set up fingerprint or face unlock in your phone\'s settings first.</string>
+
+    <!-- Biometric prompt -->
+    <string name="applock_prompt_setup_title">Turn on fingerprint or face unlock</string>
+    <string name="applock_prompt_unlock_title">Unlock PesaLens</string>
+    <string name="applock_prompt_use_pin">Use a PIN instead</string>
+</resources>
