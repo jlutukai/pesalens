@@ -45,11 +45,13 @@ import lutukai.pesalens.core.designsystem.theme.PesaLensTheme
 import lutukai.pesalens.core.designsystem.theme.PesaSpacing
 import lutukai.pesalens.core.model.ModelStatus
 import lutukai.pesalens.core.navigation.LocalNavigator
+import lutukai.pesalens.core.navigation.Navigator
 import lutukai.pesalens.core.ui.catalog.ModelFileFacts
 import lutukai.pesalens.core.ui.catalog.ModelStatusHeader
 import lutukai.pesalens.core.ui.mvi.ObserveAsEvents
 import lutukai.pesalens.feature.applock.api.AppLockSetup
 import lutukai.pesalens.feature.applock.api.LockSetupOrigin
+import lutukai.pesalens.feature.modelsetup.api.ModelSetup
 import lutukai.pesalens.feature.modelsetup.api.ModelSetupOrigin
 import lutukai.pesalens.feature.modelsetup.impl.R
 import lutukai.pesalens.feature.onboarding.api.CloudConsent
@@ -68,15 +70,26 @@ fun ModelSetupScreen(
     val navigator = LocalNavigator.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(viewModel) { viewModel.onIntent(ModelSetupIntent.Load) }
-    ObserveAsEvents(viewModel.effects) { effect ->
-        when (effect) {
-            ModelSetupEffect.Close -> navigator.back()
-            ModelSetupEffect.OpenCloudConsent -> navigator.navigate(CloudConsent(ConsentOrigin.ModelSetup))
-            ModelSetupEffect.ContinueOnboarding -> navigator.replaceAll(AppLockSetup(LockSetupOrigin.Onboarding))
-        }
-    }
+    ObserveAsEvents(viewModel.effects) { effect -> navigator.onModelSetupEffect(effect, origin) }
     val onIntent = remember(viewModel) { viewModel::onIntent }
     ModelSetupContent(state = state, onIntent = onIntent)
+}
+
+/**
+ * Model setup's navigation. Closing removes this screen itself: beside Settings, `back()` could pop a different pane.
+ * Cloud consent continues onboarding only when model setup was opened from Welcome.
+ */
+internal fun Navigator.onModelSetupEffect(effect: ModelSetupEffect, origin: ModelSetupOrigin) = when (effect) {
+    ModelSetupEffect.Close -> remove(ModelSetup(origin))
+    ModelSetupEffect.OpenCloudConsent -> navigate(CloudConsent(origin.consentOrigin()))
+    ModelSetupEffect.ContinueOnboarding -> replaceAll(AppLockSetup(LockSetupOrigin.Onboarding))
+}
+
+/** Where the consent sheet was opened from, which decides what agreeing does: only Welcome's continues onboarding. */
+internal fun ModelSetupOrigin.consentOrigin(): ConsentOrigin = when (this) {
+    ModelSetupOrigin.Welcome -> ConsentOrigin.ModelSetup
+    ModelSetupOrigin.Settings -> ConsentOrigin.Settings
+    ModelSetupOrigin.Assistant -> ConsentOrigin.Assistant
 }
 
 @Composable

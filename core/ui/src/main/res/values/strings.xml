@@ -21,7 +21,10 @@
 
     <!-- Spending card -->
     <string name="core_ui_spending_kicker">Spending · %1$s</string>
-    <string name="core_ui_spending_total_caption">Total across %1$d categories · %2$s</string>
+    <plurals name="core_ui_spending_total_caption">
+        <item quantity="one">Total across %1$d category · %2$s</item>
+        <item quantity="other">Total across %1$d categories · %2$s</item>
+    </plurals>
     <string name="core_ui_spending_sample_tag">Sample</string>
     <string name="core_ui_spending_insight_footnote">Insight computed by the app from sample data</string>
     <string name="core_ui_spending_read_as_text">Read chart as text</string>

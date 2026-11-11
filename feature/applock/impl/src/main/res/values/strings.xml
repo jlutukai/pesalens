@@ -30,7 +30,10 @@
     <string name="applock_locked_sub_biometric">Use fingerprint or face unlock</string>
     <string name="applock_error_incorrect">Incorrect PIN. Try again.</string>
     <!-- not in prototype -->
-    <string name="applock_error_cooldown">Too many attempts. Try again in %1$d seconds.</string>
+    <plurals name="applock_error_cooldown">
+        <item quantity="one">Too many attempts. Try again in %1$d second.</item>
+        <item quantity="other">Too many attempts. Try again in %1$d seconds.</item>
+    </plurals>
     <!-- not in prototype -->
     <string name="applock_error_biometric_unavailable">Fingerprint, face or screen lock isn\'t available right now. Set one up in your phone\'s settings, then tap to try again.</string>
     <string name="applock_tap_to_unlock">Tap to unlock</string>

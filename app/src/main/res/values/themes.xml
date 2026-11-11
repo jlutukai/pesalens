@@ -1,3 +1,6 @@
 <resources>
-    <style name="Theme.Pesalens" parent="android:Theme.Material.NoActionBar" />
+    <!-- Light system theme: the cold-start window matches the light Nocturne background. values-night has the dark one. -->
+    <style name="Theme.Pesalens" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/window_background_light</item>
+    </style>
 </resources>

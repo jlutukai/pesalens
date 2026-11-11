@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        Cold-start window backgrounds, shown before Compose draws its first frame. They copy the Nocturne background
+        tokens, PesaColors.Light.background and PesaColors.Dark.background in
+        core/designsystem/.../theme/PesaColors.kt, and must change with them (WindowBackgroundTest checks they match).
+    -->
+    <color name="window_background_light">#F3F5FE</color>
+    <color name="window_background_dark">#161826</color>
+</resources>

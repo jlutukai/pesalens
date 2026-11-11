@@ -11,8 +11,14 @@
     <string name="assistant_opening_category">Opening %1$s for %2$s.</string>
     <string name="assistant_afford_details_summary">I have %1$s set aside and can save %2$s a month.</string>
     <string name="assistant_budget_discarded">Budget discarded. Nothing was saved.</string>
-    <string name="assistant_budget_saved_unallocated">%1$s budgeted across %2$d categories · %3$s unallocated.</string>
-    <string name="assistant_budget_saved_over_income">%1$s budgeted across %2$d categories · %3$s over income.</string>
+    <plurals name="assistant_budget_saved_unallocated">
+        <item quantity="one">%1$s budgeted across %2$d category · %3$s unallocated.</item>
+        <item quantity="other">%1$s budgeted across %2$d categories · %3$s unallocated.</item>
+    </plurals>
+    <plurals name="assistant_budget_saved_over_income">
+        <item quantity="one">%1$s budgeted across %2$d category · %3$s over income.</item>
+        <item quantity="other">%1$s budgeted across %2$d categories · %3$s over income.</item>
+    </plurals>
 
     <!-- Messages -->
     <string name="assistant_message_switched_cloud">Switched to cloud AI.</string>

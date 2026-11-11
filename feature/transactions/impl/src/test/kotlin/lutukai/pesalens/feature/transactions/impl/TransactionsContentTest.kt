@@ -1,15 +1,20 @@
 package lutukai.pesalens.feature.transactions.impl
 
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.unit.Density
 import kotlin.test.assertEquals
 import lutukai.pesalens.core.common.AppError
 import lutukai.pesalens.core.designsystem.theme.PesaLensTheme
 import lutukai.pesalens.core.testing.ScreenshotSizes
+import lutukai.pesalens.core.testing.assertFullyDisplayed
+import lutukai.pesalens.core.testing.assertTextNotTruncated
 import lutukai.pesalens.feature.transactions.impl.presentation.TransactionsContent
 import lutukai.pesalens.feature.transactions.impl.presentation.TransactionsIntent
 import lutukai.pesalens.feature.transactions.impl.presentation.TransactionsUiState
@@ -80,3 +85,24 @@ internal val november = kotlinx.datetime.YearMonth(2026, 11)
 
 internal fun foodContent(): TransactionsUiState.Content =
     lutukai.pesalens.core.testing.SampleFinance.categoryTransactions("food").toContent()
+
+/** At 200% the drill-down's top bar grows: the title and subtitle are shown in full, not clipped or ellipsized. */
+@RunWith(RobolectricTestRunner::class)
+@Config(qualifiers = ScreenshotSizes.Phone)
+class TransactionsLargeFontContentTest {
+    @get:Rule
+    val compose = createComposeRule()
+
+    @Test
+    fun content_fontScale2_topBarShowsTitleAndSubtitle() {
+        compose.setContent {
+            val density = LocalDensity.current
+            CompositionLocalProvider(LocalDensity provides Density(density.density, fontScale = 2f)) {
+                PesaLensTheme(darkTheme = false) { TransactionsContent(foodContent(), {}) }
+            }
+        }
+        compose.onNodeWithText("Food and groceries").assertFullyDisplayed().assertTextNotTruncated()
+        compose.onNodeWithText("November 2026 · 1–9 Nov").assertFullyDisplayed().assertTextNotTruncated()
+        compose.onNodeWithContentDescription("Back to conversation").assertFullyDisplayed()
+    }
+}

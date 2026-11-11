@@ -13,6 +13,7 @@ import org.koin.dsl.navigation3.navigation
 val modelSetupFeatureModule = module {
     koinViewModel { params -> ModelSetupViewModel(params.get(), get(), get(), get()) }
 
-    // Only the Settings origin opens beside Settings; Welcome and Assistant fall back to a single pane.
+    // An extra pane: beside Settings (or the chat) on wide windows. From Welcome there is no list pane below it, so
+    // PesaListDetailSceneStrategy shows it as a single, full-window pane.
     navigation<ModelSetup>(metadata = PesaPanes.extra()) { ModelSetupScreen(it.origin) }
 }

@@ -532,7 +532,7 @@ class AssistantViewModelTest {
         assertEquals(AssistantDialog.None, vm.state.value.dialog)
         assertEquals(BudgetStatus.Saved, vm.budget(budget.id).ui.status)
         val saved = vm.items.last()
-        val summary = UiText.Res(R.string.assistant_budget_saved_unallocated, persistentListOf("KSh 75,000", 6, "KSh 25,000"))
+        val summary = UiText.Plural(R.plurals.assistant_budget_saved_unallocated, 6, persistentListOf("KSh 75,000", 6, "KSh 25,000"))
         assertEquals(ChatItem.BudgetSaved(saved.id, AssistantMode.Cloud, november, summary), saved)
         assertEquals(listOf(ChatItem.Budget::class, ChatItem.BudgetSaved::class), vm.items.takeLast(2).map { it::class })
         assertEquals(false, vm.state.value.busy)
@@ -545,7 +545,7 @@ class AssistantViewModelTest {
         vm.onIntent(AssistantIntent.IncomeChanged(budget.id, "70000"))
         vm.onIntent(AssistantIntent.ReviewBudget(budget.id))
         vm.onIntent(AssistantIntent.ConfirmSave)
-        val summary = UiText.Res(R.string.assistant_budget_saved_over_income, persistentListOf("KSh 75,000", 6, "KSh 5,000"))
+        val summary = UiText.Plural(R.plurals.assistant_budget_saved_over_income, 6, persistentListOf("KSh 75,000", 6, "KSh 5,000"))
         assertEquals(summary, vm.last<ChatItem.BudgetSaved>().summary)
         assertEquals(Money.kes(70_000), finance.savedDrafts.single().income)
     }

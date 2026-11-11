@@ -24,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
@@ -39,6 +40,7 @@ import lutukai.pesalens.core.designsystem.theme.PesaLensTheme
 import lutukai.pesalens.core.designsystem.theme.PesaSpacing
 import lutukai.pesalens.core.navigation.LocalNavigator
 import lutukai.pesalens.core.ui.mvi.ObserveAsEvents
+import lutukai.pesalens.feature.applock.api.Locked
 import lutukai.pesalens.feature.applock.impl.R
 import lutukai.pesalens.feature.applock.impl.biometric.BiometricLauncher
 import lutukai.pesalens.feature.applock.impl.biometric.BiometricOutcome
@@ -63,7 +65,7 @@ fun LockedScreen(viewModel: LockedViewModel = koinViewModel()) {
                 } else {
                     viewModel.onIntent(LockedIntent.BiometricResult(BiometricOutcome.NotAvailable))
                 }
-            LockedEffect.Unlocked -> navigator.back()
+            LockedEffect.Unlocked -> navigator.remove(Locked)
         }
     }
     LockedContent(state = state, onIntent = viewModel::onIntent)
@@ -111,7 +113,7 @@ private fun PinVariant(state: LockedUiState.Pin, onIntent: (LockedIntent) -> Uni
     val error = state.error?.let {
         when (it) {
             LockedError.Incorrect -> stringResource(R.string.applock_error_incorrect)
-            is LockedError.CoolingDown -> stringResource(R.string.applock_error_cooldown, it.seconds)
+            is LockedError.CoolingDown -> pluralStringResource(R.plurals.applock_error_cooldown, it.seconds, it.seconds)
             LockedError.BiometricUnavailable -> stringResource(R.string.applock_error_biometric_unavailable)
         }
     }

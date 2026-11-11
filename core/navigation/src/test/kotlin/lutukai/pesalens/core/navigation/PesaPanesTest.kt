@@ -30,6 +30,14 @@ class PesaPanesTest {
     }
 
     @Test
+    fun panes_carryTheirRoleMarker() {
+        assertEquals(PesaPanes.PaneRole.List, PesaPanes.list(detailPlaceholder = {})[PesaPanes.PaneRoleKey])
+        assertEquals(PesaPanes.PaneRole.Detail, PesaPanes.detail()[PesaPanes.PaneRoleKey])
+        assertEquals(PesaPanes.PaneRole.Extra, PesaPanes.extra()[PesaPanes.PaneRoleKey])
+        assertTrue(PesaPanes.PaneRoleKey !in PesaPanes.overlay())
+    }
+
+    @Test
     fun overlay_carriesTheOverlayKey() {
         assertEquals("pesa.overlay", PesaPanes.OverlayKey)
         assertTrue(PesaPanes.OverlayKey in PesaPanes.overlay())

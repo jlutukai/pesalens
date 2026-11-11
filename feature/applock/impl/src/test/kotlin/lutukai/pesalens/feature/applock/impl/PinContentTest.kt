@@ -158,6 +158,14 @@ class PinContentTest {
     }
 
     @Test
+    fun locked_cooldownOfOneSecond_isSingular() {
+        compose.setContent {
+            PesaLensTheme(darkTheme = false) { LockedContent(LockedUiState.Pin(0, LockedError.CoolingDown(1)), {}) }
+        }
+        compose.onNodeWithText("Too many attempts. Try again in 1 second.").assertIsDisplayed()
+    }
+
+    @Test
     fun locked_biometricUnavailable_showsErrorAndButtonStaysTappable() {
         val intents = mutableListOf<LockedIntent>()
         compose.setContent {

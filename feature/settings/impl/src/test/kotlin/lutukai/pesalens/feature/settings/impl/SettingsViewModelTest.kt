@@ -185,7 +185,7 @@ class SettingsViewModelTest {
     }
 
     @Test
-    fun navigation_intentsBecomeEffects_andBackFiresOnce() = runTest {
+    fun navigation_intentsBecomeEffects() = runTest {
         val vm = viewModel()
         vm.effects.test {
             vm.onIntent(SettingsIntent.OpenModel)
@@ -193,6 +193,23 @@ class SettingsViewModelTest {
             vm.onIntent(SettingsIntent.OpenAppLock)
             assertEquals(SettingsEffect.OpenAppLock, awaitItem())
             vm.onIntent(SettingsIntent.Back)
+            assertEquals(SettingsEffect.Close, awaitItem())
+            expectNoEvents()
+        }
+    }
+
+    /**
+     * No permanent latch: while Settings stays on the back stack (it used to, when its back arrow popped the extra pane
+     * beside it), its back arrow must keep working. A double tap is harmless because Close removes Settings, once.
+     */
+    @Test
+    fun back_everyTapCloses() = runTest {
+        val vm = viewModel()
+        vm.effects.test {
+            vm.onIntent(SettingsIntent.Back)
+            assertEquals(SettingsEffect.Close, awaitItem())
+            vm.onIntent(SettingsIntent.OpenModel)
+            assertEquals(SettingsEffect.OpenModel, awaitItem())
             vm.onIntent(SettingsIntent.Back)
             assertEquals(SettingsEffect.Close, awaitItem())
             expectNoEvents()

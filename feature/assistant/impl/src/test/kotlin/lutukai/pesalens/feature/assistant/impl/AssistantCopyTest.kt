@@ -12,17 +12,32 @@ import org.robolectric.RuntimeEnvironment
 class AssistantCopyTest {
     private fun string(id: Int, vararg args: Any): String = RuntimeEnvironment.getApplication().getString(id, *args)
 
+    private fun plural(id: Int, count: Int, vararg args: Any): String =
+        RuntimeEnvironment.getApplication().resources.getQuantityString(id, count, *args)
+
     @Test
     fun budgetSaved_unallocated_matchesPrototype() = assertEquals(
         "KSh 75,000 budgeted across 6 categories · KSh 25,000 unallocated.",
-        string(R.string.assistant_budget_saved_unallocated, "KSh 75,000", 6, "KSh 25,000"),
+        plural(R.plurals.assistant_budget_saved_unallocated, 6, "KSh 75,000", 6, "KSh 25,000"),
     )
 
     @Test
     fun budgetSaved_overIncome_matchesPrototype() = assertEquals(
         "KSh 75,000 budgeted across 6 categories · KSh 5,000 over income.",
-        string(R.string.assistant_budget_saved_over_income, "KSh 75,000", 6, "KSh 5,000"),
+        plural(R.plurals.assistant_budget_saved_over_income, 6, "KSh 75,000", 6, "KSh 5,000"),
     )
+
+    @Test
+    fun budgetSaved_oneCategory_isSingular() {
+        assertEquals(
+            "KSh 5,000 budgeted across 1 category · KSh 95,000 unallocated.",
+            plural(R.plurals.assistant_budget_saved_unallocated, 1, "KSh 5,000", 1, "KSh 95,000"),
+        )
+        assertEquals(
+            "KSh 5,000 budgeted across 1 category · KSh 1,000 over income.",
+            plural(R.plurals.assistant_budget_saved_over_income, 1, "KSh 5,000", 1, "KSh 1,000"),
+        )
+    }
 
     @Test
     fun affordabilitySummary_matchesPrototype() = assertEquals(

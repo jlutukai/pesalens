@@ -66,6 +66,16 @@ class CloudConsentViewModelTest {
         }
     }
 
+    /** Model setup opened after onboarding passes Settings or Assistant, so agreeing must not restart onboarding. */
+    @Test
+    fun agree_fromAssistant_closes() = runTest {
+        val vm = CloudConsentViewModel(ConsentOrigin.Assistant, FakeSettingsRepository())
+        vm.effects.test {
+            vm.onIntent(CloudConsentIntent.Agree)
+            assertEquals(CloudConsentEffect.Close, awaitItem())
+        }
+    }
+
     @Test
     fun agree_doubleTap_emitsSingleEffect() = runTest {
         val vm = CloudConsentViewModel(ConsentOrigin.Settings, FakeSettingsRepository())

@@ -62,14 +62,14 @@ class ChatItemMappingTest {
 
     @Test
     fun savedSummary_unallocated() {
-        val expected = UiText.Res(R.string.assistant_budget_saved_unallocated, persistentListOf("KSh 75,000", 6, "KSh 25,000"))
+        val expected = UiText.Plural(R.plurals.assistant_budget_saved_unallocated, 6, persistentListOf("KSh 75,000", 6, "KSh 25,000"))
         assertEquals(expected, SampleFinance.draft.toUi(BudgetStatus.Saved).savedSummary())
     }
 
     @Test
     fun savedSummary_overIncome() {
         val over = SampleFinance.draft.copy(income = Money.kes(60_000)).toUi(BudgetStatus.Saved)
-        val expected = UiText.Res(R.string.assistant_budget_saved_over_income, persistentListOf("KSh 75,000", 6, "KSh 15,000"))
+        val expected = UiText.Plural(R.plurals.assistant_budget_saved_over_income, 6, persistentListOf("KSh 75,000", 6, "KSh 15,000"))
         assertEquals(expected, over.savedSummary())
     }
 

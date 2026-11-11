@@ -14,6 +14,7 @@ class BackStackNavigatorTest {
     private val home = Screen("home")
     private val spending = Screen("spending")
     private val settings = Screen("settings")
+    private val model = Screen("model")
 
     private val backStack = mutableListOf<NavKey>(home)
     private val navigator = BackStackNavigator(backStack)
@@ -38,9 +39,81 @@ class BackStackNavigatorTest {
     fun navigate_differentFromTop_pushes() {
         navigator.navigate(spending)
         navigator.navigate(settings)
+
+        assertEquals(listOf<NavKey>(home, spending, settings), backStack)
+    }
+
+    @Test
+    fun navigate_existingInStack_popsBackToIt() {
+        navigator.navigate(spending)
+        navigator.navigate(settings)
+        navigator.navigate(model)
+
         navigator.navigate(spending)
 
-        assertEquals(listOf<NavKey>(home, spending, settings, spending), backStack)
+        assertEquals(listOf<NavKey>(home, spending), backStack)
+        assertEquals(spending, navigator.current)
+    }
+
+    @Test
+    fun navigate_existingRoot_popsEverythingAboveIt() {
+        navigator.navigate(spending)
+        navigator.navigate(settings)
+
+        navigator.navigate(Screen("home"))
+
+        assertEquals(listOf<NavKey>(home), backStack)
+    }
+
+    @Test
+    fun remove_popsUpToInclusive() {
+        navigator.navigate(settings)
+        navigator.navigate(model)
+
+        navigator.remove(settings)
+
+        assertEquals(listOf<NavKey>(home), backStack)
+    }
+
+    @Test
+    fun remove_top_popsJustTheTop() {
+        navigator.navigate(settings)
+        navigator.navigate(model)
+
+        navigator.remove(model)
+
+        assertEquals(listOf<NavKey>(home, settings), backStack)
+    }
+
+    @Test
+    fun remove_notInStack_isIgnored() {
+        navigator.navigate(settings)
+
+        navigator.remove(model)
+        navigator.remove(model)
+
+        assertEquals(listOf<NavKey>(home, settings), backStack)
+    }
+
+    @Test
+    fun remove_twice_removesOnce() {
+        navigator.navigate(spending)
+        navigator.navigate(settings)
+
+        navigator.remove(settings)
+        navigator.remove(settings)
+
+        assertEquals(listOf<NavKey>(home, spending), backStack)
+    }
+
+    @Test
+    fun remove_neverEmpties() {
+        navigator.remove(home)
+        assertEquals(listOf<NavKey>(home), backStack)
+
+        navigator.navigate(settings)
+        navigator.remove(home)
+        assertEquals(listOf<NavKey>(home), backStack)
     }
 
     @Test

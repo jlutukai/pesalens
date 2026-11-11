@@ -84,11 +84,12 @@ fun AppLockSetupScreen(
                 } else {
                     viewModel.onIntent(AppLockSetupIntent.BiometricResult(BiometricOutcome.NotAvailable))
                 }
+            // Beside Settings, back() would pop whatever is on top; this screen removes itself.
             AppLockSetupEffect.Finish -> when (destination.origin) {
                 LockSetupOrigin.Onboarding -> navigator.replaceAll(Assistant)
-                LockSetupOrigin.Settings -> navigator.back()
+                LockSetupOrigin.Settings -> navigator.remove(destination)
             }
-            AppLockSetupEffect.Close -> navigator.back()
+            AppLockSetupEffect.Close -> navigator.remove(destination)
         }
     }
     AppLockSetupContent(state = state, onIntent = viewModel::onIntent)

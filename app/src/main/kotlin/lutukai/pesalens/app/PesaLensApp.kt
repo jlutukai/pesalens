@@ -18,7 +18,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirectiveWithTwoPanesOnMediumWidth
-import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -46,6 +45,7 @@ import lutukai.pesalens.core.navigation.BackStackNavigator
 import lutukai.pesalens.core.navigation.LocalNavigator
 import lutukai.pesalens.core.navigation.PesaDestination
 import lutukai.pesalens.core.navigation.rememberAdaptiveOverlaySceneStrategy
+import lutukai.pesalens.core.navigation.rememberPesaListDetailSceneStrategy
 import lutukai.pesalens.core.ui.message.UserMessageQueue
 import lutukai.pesalens.core.ui.text.UiText
 import org.koin.compose.koinInject
@@ -105,7 +105,8 @@ private fun AppNavigation(startDestination: PesaDestination) {
             sceneStrategies = listOf(
                 rememberAdaptiveOverlaySceneStrategy<NavKey>(),
                 // Medium widths (600-839dp, e.g. an unfolded foldable) split too; the default directive keeps one pane.
-                rememberListDetailSceneStrategy<NavKey>(
+                // Panes only split beside a list pane; a lone extra pane (onboarding's lock setup) gets the window.
+                rememberPesaListDetailSceneStrategy<NavKey>(
                     directive = calculatePaneScaffoldDirectiveWithTwoPanesOnMediumWidth(currentWindowAdaptiveInfoV2()),
                 ),
             ),

@@ -80,7 +80,8 @@ fun TransactionsScreen(destination: CategoryTransactions, viewModel: Transaction
     }
     ObserveAsEvents(viewModel.effects) { effect ->
         when (effect) {
-            TransactionsEffect.Close -> navigator.back()
+            // Removes this screen even when another pane (model setup opened from the chat) sits above it.
+            TransactionsEffect.Close -> navigator.remove(destination)
         }
     }
     val onIntent = remember(viewModel) { viewModel::onIntent }

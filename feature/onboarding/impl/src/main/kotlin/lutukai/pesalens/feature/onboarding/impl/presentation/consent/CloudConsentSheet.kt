@@ -14,7 +14,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,6 +40,7 @@ import lutukai.pesalens.core.navigation.LocalNavigator
 import lutukai.pesalens.core.ui.mvi.ObserveAsEvents
 import lutukai.pesalens.feature.applock.api.AppLockSetup
 import lutukai.pesalens.feature.applock.api.LockSetupOrigin
+import lutukai.pesalens.feature.onboarding.api.CloudConsent
 import lutukai.pesalens.feature.onboarding.api.ConsentOrigin
 import lutukai.pesalens.feature.onboarding.impl.R
 import org.koin.compose.viewmodel.koinViewModel
@@ -50,7 +53,8 @@ fun CloudConsentSheet(origin: ConsentOrigin) {
     val navigator = LocalNavigator.current
     ObserveAsEvents(viewModel.effects) { effect ->
         when (effect) {
-            CloudConsentEffect.Close -> navigator.back()
+            // Removes this sheet, not whatever might be on top by the time an agreement has been saved.
+            CloudConsentEffect.Close -> navigator.remove(CloudConsent(origin))
             CloudConsentEffect.ContinueOnboarding -> navigator.replaceAll(AppLockSetup(LockSetupOrigin.Onboarding))
         }
     }
@@ -62,7 +66,11 @@ fun CloudConsentSheet(origin: ConsentOrigin) {
 fun CloudConsentContent(onIntent: (CloudConsentIntent) -> Unit, modifier: Modifier = Modifier) {
     val colors = PesaLensTheme.colors
     val type = PesaLensTheme.type
-    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+    // Scrolls when the sheet or dialog is shorter than its content (landscape, large fonts), so the buttons stay reachable.
+    Column(
+        modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(14.dp),
+    ) {
         Icon(PesaIcons.Cloud, contentDescription = null, modifier = Modifier.size(26.dp), tint = colors.accentText)
         Column(verticalArrangement = Arrangement.spacedBy(PesaSpacing.xs)) {
             Text(stringResource(R.string.consent_title), style = type.titleMedium, color = colors.text)

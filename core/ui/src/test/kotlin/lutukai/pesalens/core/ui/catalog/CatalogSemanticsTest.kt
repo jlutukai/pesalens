@@ -99,6 +99,19 @@ class CatalogSemanticsTest {
     }
 
     @Test
+    fun spendingChart_totalCaption_pluralisesCategories() {
+        val one = spending.copy(categories = spending.categories.take(1).toImmutableList())
+        composeRule.setContent { PesaLensTheme(darkTheme = false) { SpendingChartCard(one, onCategoryClick = {}) } }
+        composeRule.onNodeWithText("Total across 1 category · ${spending.rangeLabel}").assertIsDisplayed()
+    }
+
+    @Test
+    fun spendingChart_totalCaption_manyCategories() {
+        composeRule.setContent { PesaLensTheme(darkTheme = false) { SpendingChartCard(spending, onCategoryClick = {}) } }
+        composeRule.onNodeWithText("Total across 6 categories · ${spending.rangeLabel}").assertIsDisplayed()
+    }
+
+    @Test
     fun spendingChart_zeroTotal_rendersWithoutCrash() {
         val empty = spending.copy(
             total = Money.Zero,

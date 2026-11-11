@@ -33,7 +33,6 @@ class SettingsViewModel(
 
     private var loadJob: Job? = null
     private val systemDark = MutableStateFlow(false)
-    private var closed = false
 
     override fun handleIntent(intent: SettingsIntent) = when (intent) {
         is SettingsIntent.Load -> load(intent.systemDark)
@@ -46,7 +45,7 @@ class SettingsViewModel(
         SettingsIntent.Dismiss -> reduce { copy(dialog = SettingsDialog.None) }
         SettingsIntent.ConfirmClear -> confirmClear()
         SettingsIntent.ConfirmReset -> confirmReset()
-        SettingsIntent.Back -> close()
+        SettingsIntent.Back -> emit(SettingsEffect.Close)
     }
 
     /** Collects the three sources once for the life of the ViewModel; a later Load only updates the system theme. */
@@ -116,12 +115,5 @@ class SettingsViewModel(
                 is AppResult.Failure -> messages.show(UiText.Res(R.string.settings_message_reset_failed))
             }
         }
-    }
-
-    /** One navigation effect; further taps (double tap) are ignored. */
-    private fun close() {
-        if (closed) return
-        closed = true
-        emit(SettingsEffect.Close)
     }
 }

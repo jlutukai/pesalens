@@ -17,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -53,7 +54,12 @@ fun SpendingChartCard(spending: SpendingUi, onCategoryClick: (String) -> Unit, m
                 PesaKicker(stringResource(R.string.core_ui_spending_kicker, spending.month.formatLong()))
                 Text(spending.total.formatKes(), style = PesaLensTheme.type.figure, color = colors.text)
                 Text(
-                    stringResource(R.string.core_ui_spending_total_caption, spending.categories.size, spending.rangeLabel),
+                    pluralStringResource(
+                        R.plurals.core_ui_spending_total_caption,
+                        spending.categories.size,
+                        spending.categories.size,
+                        spending.rangeLabel,
+                    ),
                     style = PesaLensTheme.type.meta,
                     color = colors.textMuted,
                 )

@@ -61,6 +61,8 @@ import lutukai.pesalens.core.model.AssistantMode
 import lutukai.pesalens.core.model.LockMethod
 import lutukai.pesalens.core.model.ModelStatus
 import lutukai.pesalens.core.navigation.LocalNavigator
+import lutukai.pesalens.core.navigation.Navigator
+import lutukai.pesalens.core.navigation.PesaDestination
 import lutukai.pesalens.core.ui.mvi.ObserveAsEvents
 import lutukai.pesalens.feature.applock.api.AppLockSetup
 import lutukai.pesalens.feature.applock.api.LockSetupOrigin
@@ -68,6 +70,7 @@ import lutukai.pesalens.feature.modelsetup.api.ModelSetup
 import lutukai.pesalens.feature.modelsetup.api.ModelSetupOrigin
 import lutukai.pesalens.feature.onboarding.api.CloudConsent
 import lutukai.pesalens.feature.onboarding.api.ConsentOrigin
+import lutukai.pesalens.feature.settings.api.Settings
 import lutukai.pesalens.feature.settings.impl.R
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -83,16 +86,33 @@ fun SettingsScreen(viewModel: SettingsViewModel = koinViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val systemDark = isSystemInDarkTheme()
     LaunchedEffect(viewModel, systemDark) { viewModel.onIntent(SettingsIntent.Load(systemDark)) }
-    ObserveAsEvents(viewModel.effects) { effect ->
-        when (effect) {
-            SettingsEffect.OpenModel -> navigator.navigate(ModelSetup(ModelSetupOrigin.Settings))
-            SettingsEffect.OpenAppLock -> navigator.navigate(AppLockSetup(LockSetupOrigin.Settings))
-            SettingsEffect.OpenCloudConsent -> navigator.navigate(CloudConsent(ConsentOrigin.Settings))
-            SettingsEffect.Close -> navigator.back()
-        }
-    }
+    ObserveAsEvents(viewModel.effects) { effect -> navigator.onSettingsEffect(effect) }
     val onIntent = remember(viewModel) { viewModel::onIntent }
     SettingsContent(state = state, onIntent = onIntent)
+}
+
+/**
+ * Settings' navigation. Model setup and app lock open in the extra pane beside Settings, and one replaces the other
+ * rather than stacking on it. Closing removes Settings itself (with any pane it opened): `back()` would pop whatever is
+ * on top, which beside Settings is the extra pane.
+ */
+internal fun Navigator.onSettingsEffect(effect: SettingsEffect) = when (effect) {
+    SettingsEffect.OpenModel -> openBesideSettings(ModelSetup(ModelSetupOrigin.Settings))
+    SettingsEffect.OpenAppLock -> openBesideSettings(AppLockSetup(LockSetupOrigin.Settings))
+    SettingsEffect.OpenCloudConsent -> navigate(CloudConsent(ConsentOrigin.Settings))
+    SettingsEffect.Close -> remove(Settings)
+}
+
+private fun Navigator.openBesideSettings(destination: PesaDestination) {
+    val top = current
+    if (top != destination && top.isOpenedBySettings()) replaceTop(destination) else navigate(destination)
+}
+
+/** The extra-pane screens Settings opens. */
+private fun PesaDestination?.isOpenedBySettings(): Boolean = when (this) {
+    is ModelSetup -> origin == ModelSetupOrigin.Settings
+    is AppLockSetup -> origin == LockSetupOrigin.Settings
+    else -> false
 }
 
 @Composable

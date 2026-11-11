@@ -32,6 +32,11 @@ import lutukai.pesalens.core.designsystem.theme.PesaLensTheme
 
 private val KeyWidth = 76.dp
 private val KeyHeight = 64.dp
+private val RowGap = 12.dp
+private val ColumnGap = 28.dp
+
+/** Width of [PesaPinPad]: three keys and two column gaps. Layouts that place it beside other content need this much. */
+val PesaPinPadWidth = KeyWidth * 3 + ColumnGap * 2
 private val KeyShape = RoundedCornerShape(32.dp)
 private val KeyPressedShape = RoundedCornerShape(16.dp)
 
@@ -67,15 +72,15 @@ fun PesaPinPad(
     val colors = PesaLensTheme.colors
     val keyShapes = ButtonDefaults.shapes(shape = KeyShape, pressedShape = KeyPressedShape)
     val digitStyle = PesaLensTheme.type.titleLarge.copy(fontSize = 26.sp)
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(RowGap)) {
         listOf("123", "456", "789").forEach { row ->
-            Row(horizontalArrangement = Arrangement.spacedBy(28.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(ColumnGap)) {
                 row.forEach { digit ->
                     DigitKey(digit, enabled, onDigit, keyShapes, colors.surface, colors.text, colors.border, digitStyle)
                 }
             }
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(28.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(ColumnGap)) {
             Box(Modifier.size(KeyWidth, KeyHeight))
             DigitKey('0', enabled, onDigit, keyShapes, colors.surface, colors.text, colors.border, digitStyle)
             IconButton(

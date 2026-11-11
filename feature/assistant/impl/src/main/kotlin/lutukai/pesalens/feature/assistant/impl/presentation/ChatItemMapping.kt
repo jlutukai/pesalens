@@ -56,13 +56,15 @@ internal fun BudgetUi.toDraft(): BudgetDraft = BudgetDraft(
 
 /** "KSh 75,000 budgeted across 6 categories · KSh 25,000 unallocated." or "… · KSh 5,000 over income." */
 internal fun BudgetUi.savedSummary(): UiText = if (totals.isOver) {
-    UiText.Res(
-        R.string.assistant_budget_saved_over_income,
+    UiText.Plural(
+        R.plurals.assistant_budget_saved_over_income,
+        lines.size,
         persistentListOf(totals.total.formatKes(), lines.size, (Money.Zero - totals.difference).formatKes()),
     )
 } else {
-    UiText.Res(
-        R.string.assistant_budget_saved_unallocated,
+    UiText.Plural(
+        R.plurals.assistant_budget_saved_unallocated,
+        lines.size,
         persistentListOf(totals.total.formatKes(), lines.size, totals.difference.formatKes()),
     )
 }
