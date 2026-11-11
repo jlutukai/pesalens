@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.dp
 import lutukai.pesalens.core.designsystem.theme.PesaLensTheme
 import lutukai.pesalens.core.designsystem.theme.PesaSpacing
 
+private val StepperIconSize = 14.dp
+
 /** Outlined +/- stepper, 48dp tall; [width] is 48dp by default and 44dp in dense rows. */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -51,7 +53,8 @@ fun PesaStepperButton(
             ),
             border = BorderStroke(1.dp, if (enabled) colors.border else colors.border.copy(alpha = 0.45f)),
         ) {
-            Icon(icon, contentDescription = contentDescription)
+            // The prototype's glyph follows the button's default 13.3px font size.
+            Icon(icon, contentDescription = contentDescription, modifier = Modifier.size(StepperIconSize))
         }
     }
 }

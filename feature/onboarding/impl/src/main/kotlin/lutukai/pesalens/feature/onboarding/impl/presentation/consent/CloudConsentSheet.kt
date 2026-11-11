@@ -8,6 +8,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -55,6 +57,7 @@ fun CloudConsentSheet(origin: ConsentOrigin) {
     CloudConsentContent(onIntent = viewModel::onIntent)
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun CloudConsentContent(onIntent: (CloudConsentIntent) -> Unit, modifier: Modifier = Modifier) {
     val colors = PesaLensTheme.colors
@@ -70,14 +73,20 @@ fun CloudConsentContent(onIntent: (CloudConsentIntent) -> Unit, modifier: Modifi
                 .fillMaxWidth()
                 .background(colors.surfaceAlt, InfoShape)
                 .border(1.dp, colors.border, InfoShape)
-                .padding(14.dp),
+                // 14dp padding inside the 1dp border, as in CSS.
+                .padding(15.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             InfoRow(PesaIcons.ArrowUpRight, R.string.consent_sent)
             InfoRow(PesaIcons.LockSimple, R.string.consent_not_sent)
             InfoRow(PesaIcons.WifiHigh, R.string.consent_needs_internet)
         }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(PesaSpacing.sm, Alignment.End)) {
+        // At large font sizes a button that no longer fits moves to its own line rather than wrapping its label.
+        FlowRow(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(PesaSpacing.sm, Alignment.End),
+            verticalArrangement = Arrangement.spacedBy(PesaSpacing.sm),
+        ) {
             PesaButton(
                 text = stringResource(R.string.consent_not_now),
                 onClick = { onIntent(CloudConsentIntent.NotNow) },

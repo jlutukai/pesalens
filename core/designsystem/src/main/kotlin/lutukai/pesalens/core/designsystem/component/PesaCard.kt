@@ -13,7 +13,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import lutukai.pesalens.core.designsystem.theme.PesaLensTheme
 
-/** Surface card: 1dp border, card shape, 16dp padding and 14dp gap by default. */
+/**
+ * Surface card: 1dp border, card shape, 16dp padding and 14dp gap by default. The padding is measured inside the border,
+ * as in CSS, so the content sits [contentPadding] + 1dp from the edge.
+ */
 @Composable
 fun PesaCard(
     modifier: Modifier = Modifier,
@@ -29,6 +32,6 @@ fun PesaCard(
         contentColor = PesaLensTheme.colors.text,
         border = BorderStroke(1.dp, border),
     ) {
-        Column(Modifier.padding(contentPadding), verticalArrangement = Arrangement.spacedBy(spacing), content = content)
+        Column(Modifier.padding(contentPadding + 1.dp), verticalArrangement = Arrangement.spacedBy(spacing), content = content)
     }
 }

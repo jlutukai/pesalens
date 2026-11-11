@@ -47,7 +47,8 @@ fun ModeBanner(mode: AssistantMode) {
         color = if (cloud) colors.surface else colors.tintSubtle,
         border = BorderStroke(1.dp, if (cloud) colors.border else colors.accent),
     ) {
-        Row(Modifier.padding(horizontal = 12.dp, vertical = 10.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.Top) {
+        // 12/10dp padding inside the 1dp border, as in CSS.
+        Row(Modifier.padding(horizontal = 13.dp, vertical = 11.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.Top) {
             Icon(
                 if (cloud) PesaIcons.Cloud else PesaIcons.CpuFill,
                 contentDescription = null,

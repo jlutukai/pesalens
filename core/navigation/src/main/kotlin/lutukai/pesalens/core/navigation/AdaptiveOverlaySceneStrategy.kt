@@ -154,7 +154,8 @@ private fun OverlaySheet(state: SheetState, onDismiss: () -> Unit, body: @Compos
             Modifier
                 .fillMaxWidth()
                 .topBorder(shape, colors.border)
-                .padding(start = OverlayPadding, end = OverlayPadding, top = PesaSpacing.md, bottom = OverlayPadding),
+                // The top padding sits under the 1dp top border, as in CSS.
+                .padding(start = OverlayPadding, end = OverlayPadding, top = PesaSpacing.md + BorderWidth, bottom = OverlayPadding),
         ) {
             // Decorative, as in the prototype: the whole sheet drags, and the scrim and back dismiss it.
             Box(
@@ -199,7 +200,7 @@ private fun OverlayDialog(onDismiss: () -> Unit, body: @Composable () -> Unit) {
                 border = BorderStroke(BorderWidth, colors.border),
                 shadowElevation = DialogShadow,
             ) {
-                Box(Modifier.padding(OverlayPadding)) { body() }
+                Box(Modifier.padding(OverlayPadding + BorderWidth)) { body() }
             }
         }
     }

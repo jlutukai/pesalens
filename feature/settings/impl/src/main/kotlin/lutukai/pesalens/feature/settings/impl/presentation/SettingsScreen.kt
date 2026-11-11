@@ -7,6 +7,7 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -73,9 +74,6 @@ import org.koin.compose.viewmodel.koinViewModel
 /** Content never grows wider than this; on wide panes it is centred. */
 private val ContentMaxWidth = 640.dp
 
-/** Two icon-and-label segments; the equal-width segments need a bounded width beside the "Theme" label. */
-private val ThemeControlWidth = 220.dp
-
 /** From this font scale the "Theme" label and the control are stacked instead of sharing a line. */
 private const val StackFontScale = 1.5f
 
@@ -128,6 +126,11 @@ fun SettingsContent(state: SettingsUiState, onIntent: (SettingsIntent) -> Unit, 
                     subtitle = modelSubtitle(state.modelStatus),
                     icon = PesaIcons.Cpu,
                     onClick = { onIntent(SettingsIntent.OpenModel) },
+                    minHeight = 0.dp,
+                    verticalPadding = 14.dp,
+                    tileSize = 40.dp,
+                    tileShape = PesaLensTheme.shapes.tile,
+                    gap = PesaSpacing.md,
                 )
                 SecurityAndAppearance(state, onIntent)
                 DataSection(onIntent)
@@ -201,7 +204,7 @@ private fun SecurityAndAppearance(state: SettingsUiState, onIntent: (SettingsInt
         val label = @Composable { modifier: Modifier ->
             Text(
                 stringResource(R.string.settings_theme),
-                modifier = modifier.padding(start = PesaSpacing.xs),
+                modifier = modifier,
                 style = PesaLensTheme.type.body,
                 color = PesaLensTheme.colors.text,
             )
@@ -232,7 +235,8 @@ private fun SecurityAndAppearance(state: SettingsUiState, onIntent: (SettingsInt
                     selected = state.resolvedDark,
                     onSelect = { onIntent(SettingsIntent.SetTheme(it)) },
                     contentDescription = stringResource(R.string.settings_theme),
-                    modifier = Modifier.width(ThemeControlWidth),
+                    // Sized to its two segments, which share the widest one's width, like the prototype's flex group.
+                    modifier = Modifier.width(IntrinsicSize.Max),
                 )
             }
         }
@@ -305,14 +309,19 @@ private fun ClearDialog(onIntent: (SettingsIntent) -> Unit) {
     PesaAlertDialog(
         title = stringResource(R.string.settings_clear_dialog_title),
         onDismiss = { onIntent(SettingsIntent.Dismiss) },
-        subtitle = stringResource(R.string.settings_clear_dialog_body),
         dismiss = {
             PesaButton(stringResource(R.string.settings_clear_dialog_cancel), { onIntent(SettingsIntent.Dismiss) }, style = PesaButtonStyle.Text)
         },
         confirm = {
             PesaButton(stringResource(R.string.settings_clear_dialog_confirm), { onIntent(SettingsIntent.ConfirmClear) }, style = PesaButtonStyle.Outlined)
         },
-    )
+    ) {
+        Text(
+            stringResource(R.string.settings_clear_dialog_body),
+            style = PesaLensTheme.type.bodySmall.copy(lineHeight = 21.sp),
+            color = PesaLensTheme.colors.textMuted,
+        )
+    }
 }
 
 @Composable

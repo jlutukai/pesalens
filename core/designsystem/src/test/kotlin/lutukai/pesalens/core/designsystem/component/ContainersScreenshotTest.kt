@@ -92,7 +92,7 @@ private fun ContainersSheet() {
                     modifier = Modifier.padding(start = 38.dp, bottom = 14.dp),
                 )
             }
-            Box(Modifier.fillMaxWidth().height(300.dp)) {
+            Box(Modifier.fillMaxWidth().height(380.dp)) {
                 PesaAlertDialogContent(
                     title = "Reset sample data?",
                     onDismiss = {},

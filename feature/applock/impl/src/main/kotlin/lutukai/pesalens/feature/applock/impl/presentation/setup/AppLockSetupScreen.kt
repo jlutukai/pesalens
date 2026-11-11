@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import lutukai.pesalens.core.designsystem.component.PesaButton
+import lutukai.pesalens.core.designsystem.component.PesaButtonSize
 import lutukai.pesalens.core.designsystem.component.PesaButtonStyle
 import lutukai.pesalens.core.designsystem.component.PesaCardRow
 import lutukai.pesalens.core.designsystem.component.PesaIconTile
@@ -200,6 +201,7 @@ private fun ChooseBody(state: AppLockSetupUiState.Choose, onIntent: (AppLockSetu
                     onClick = { onIntent(AppLockSetupIntent.Skip) },
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                     style = PesaButtonStyle.TextMuted,
+                    size = PesaButtonSize.Small,
                 )
             }
         }

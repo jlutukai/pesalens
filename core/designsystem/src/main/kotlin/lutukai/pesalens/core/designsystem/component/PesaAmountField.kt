@@ -50,6 +50,7 @@ fun PesaAmountField(
     horizontalPadding: Dp = 14.dp,
     textStyle: TextStyle = PesaLensTheme.type.body,
     prefixStyle: TextStyle = PesaLensTheme.type.body,
+    prefixGap: Dp = 6.dp,
 ) {
     val colors = PesaLensTheme.colors
     val borderColor = if (isError) colors.warnBorder else colors.border
@@ -74,7 +75,7 @@ fun PesaAmountField(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 if (prefix != null) {
-                    Text(prefix, style = prefixStyle, color = colors.textMuted, modifier = Modifier.padding(end = PesaSpacing.sm))
+                    Text(prefix, style = prefixStyle, color = colors.textMuted, modifier = Modifier.padding(end = prefixGap))
                 }
                 Box(
                     Modifier.weight(1f),
@@ -84,7 +85,7 @@ fun PesaAmountField(
                         Text(
                             placeholder,
                             style = textStyle,
-                            color = colors.textMuted,
+                            color = colors.placeholder,
                             textAlign = textAlign,
                             modifier = Modifier.fillMaxWidth(),
                         )

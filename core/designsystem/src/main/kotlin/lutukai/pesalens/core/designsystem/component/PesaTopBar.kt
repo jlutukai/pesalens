@@ -22,6 +22,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -29,7 +30,7 @@ import lutukai.pesalens.core.designsystem.icon.PesaIcons
 import lutukai.pesalens.core.designsystem.theme.PesaLensTheme
 import lutukai.pesalens.core.designsystem.theme.PesaSpacing
 
-/** 64dp top bar (backContentDescription is mandatory when onBack is set) with a bottom 1dp border, optional 48dp back button, title, subtitle and trailing actions. */
+/** 64dp top bar (18sp title by default; backContentDescription is mandatory when onBack is set) with a bottom 1dp border, optional 48dp back button, title, subtitle and trailing actions. */
 @Composable
 fun PesaTopBar(
     title: String,
@@ -37,6 +38,7 @@ fun PesaTopBar(
     subtitle: String? = null,
     onBack: (() -> Unit)? = null,
     backContentDescription: String? = null,
+    titleStyle: TextStyle = PesaLensTheme.type.title.copy(letterSpacing = TextUnit.Unspecified),
     actions: @Composable RowScope.() -> Unit = {},
 ) {
     require(onBack == null || backContentDescription != null) { "backContentDescription is required when onBack is set" }
@@ -67,7 +69,7 @@ fun PesaTopBar(
             }
         }
         Column(Modifier.weight(1f)) {
-            Text(title, style = PesaLensTheme.type.titleSmall, color = colors.text, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(title, style = titleStyle, color = colors.text, maxLines = 1, overflow = TextOverflow.Ellipsis)
             if (subtitle != null) {
                 Text(subtitle, style = PesaLensTheme.type.kicker.copy(letterSpacing = TextUnit.Unspecified), color = colors.textMuted)
             }

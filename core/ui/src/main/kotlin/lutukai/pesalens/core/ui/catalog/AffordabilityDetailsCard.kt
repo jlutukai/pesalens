@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -65,7 +66,7 @@ fun AffordabilityDetailsCard(
         )
         if (!form.submitted) {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                PesaSuggestionChip(stringResource(R.string.core_ui_details_use_sample), onUseSample)
+                PesaSuggestionChip(stringResource(R.string.core_ui_details_use_sample), onUseSample, containerColor = Color.Transparent)
                 PesaButton(stringResource(R.string.core_ui_details_submit), onSubmit, Modifier.fillMaxWidth())
             }
         }
@@ -95,6 +96,7 @@ private fun AmountInput(
             containerColor = colors.surfaceAlt,
             horizontalPadding = 12.dp,
             textStyle = PesaLensTheme.type.body.copy(fontSize = 16.sp, fontFeatureSettings = "tnum"),
+            prefixStyle = PesaLensTheme.type.bodySmall,
         )
         if (missing) {
             Row(horizontalArrangement = Arrangement.spacedBy(5.dp), verticalAlignment = Alignment.CenterVertically) {

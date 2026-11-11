@@ -164,7 +164,8 @@ private fun NotDownloaded(onIntent: (ModelSetupIntent) -> Unit) {
             contentColor = PesaLensTheme.colors.text,
             border = BorderStroke(1.dp, PesaLensTheme.colors.border),
         ) {
-            Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            // 14dp padding inside the 1dp border, as in CSS.
+            Column(Modifier.padding(15.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Fact(PesaIcons.DeviceMobile, R.string.model_fact_runs_here)
                 Fact(PesaIcons.WifiSlash, R.string.model_fact_offline)
                 Fact(PesaIcons.Gauge, R.string.model_fact_compatibility)
@@ -237,6 +238,8 @@ private fun Failed(state: ModelSetupUiState.Failed, onIntent: (ModelSetupIntent)
             icon = PesaIcons.WifiSlash,
             tone = CalloutTone.Warn,
             liveRegion = true,
+            textStyle = PesaLensTheme.type.bodySmall,
+            iconSize = 18.dp,
         )
         Text(stringResource(R.string.model_failed_body), style = PesaLensTheme.type.meta.copy(lineHeight = 19.5.sp), color = PesaLensTheme.colors.textMuted)
         ActionButton(R.string.model_retry, ModelSetupIntent.Retry, onIntent, PesaButtonStyle.Outlined)

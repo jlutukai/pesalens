@@ -30,9 +30,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.datetime.YearMonth
@@ -147,6 +149,7 @@ private fun TopBar(title: String, subtitle: String?, onBack: () -> Unit, tagged:
         subtitle = subtitle,
         onBack = onBack,
         backContentDescription = stringResource(R.string.transactions_back),
+        titleStyle = PesaLensTheme.type.titleSmall,
         actions = {
             if (tagged) PesaPill(stringResource(R.string.transactions_sample_tag), PillTone.Dashed, icon = PesaIcons.Database, height = 24.dp)
         },
@@ -179,7 +182,7 @@ private fun ContentBody(state: TransactionsUiState.Content, showBackButton: Bool
         Text(
             stringResource(R.string.transactions_list_title),
             modifier = Modifier.padding(start = 2.dp, end = 2.dp, bottom = PesaSpacing.sm),
-            style = type.label,
+            style = type.meta.copy(fontWeight = FontWeight.Medium),
             color = colors.textMuted,
         )
         state.transactions.forEach { TransactionRow(it) }
@@ -235,7 +238,8 @@ private fun TotalCard(state: TransactionsUiState.Content) {
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
-                Text(state.total.formatKes(), style = type.title.copy(fontFeatureSettings = "tnum"), color = colors.text)
+                // 28sp at the prototype's inherited 1.5 line height (this figure sets no line height of its own).
+                Text(state.total.formatKes(), style = type.headline.copy(fontFeatureSettings = "tnum", lineHeight = 42.sp), color = colors.text)
                 Text(state.meta.asString(), style = type.meta, color = colors.textMuted)
             }
         }

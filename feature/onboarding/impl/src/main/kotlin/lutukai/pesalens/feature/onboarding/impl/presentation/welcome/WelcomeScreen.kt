@@ -38,6 +38,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import lutukai.pesalens.core.designsystem.adaptive.PesaWidthClass
 import lutukai.pesalens.core.designsystem.adaptive.rememberPesaWindowInfo
 import lutukai.pesalens.core.designsystem.component.PesaButton
+import lutukai.pesalens.core.designsystem.component.PesaButtonSize
 import lutukai.pesalens.core.designsystem.component.PesaButtonStyle
 import lutukai.pesalens.core.designsystem.pattern.ChartPattern
 import lutukai.pesalens.core.designsystem.pattern.patternFill
@@ -154,13 +155,14 @@ private fun Copy(onIntent: (WelcomeIntent) -> Unit) {
                 onClick = { onIntent(WelcomeIntent.GetStarted) },
                 modifier = Modifier.fillMaxWidth(),
                 style = PesaButtonStyle.Tonal,
-                large = true,
+                size = PesaButtonSize.Large,
             )
             PesaButton(
                 text = stringResource(R.string.welcome_use_on_device),
                 onClick = { onIntent(WelcomeIntent.UseOnDeviceInstead) },
                 modifier = Modifier.fillMaxWidth(),
                 style = PesaButtonStyle.TextMuted,
+                size = PesaButtonSize.Small,
             )
         }
     }
@@ -180,7 +182,8 @@ private fun PreviewCard(modifier: Modifier = Modifier) {
             .clip(PesaLensTheme.shapes.card)
             .background(colors.surface)
             .border(1.dp, colors.border, PesaLensTheme.shapes.card)
-            .padding(PesaSpacing.lg),
+            // 16dp padding inside the 1dp border, as in CSS.
+            .padding(PesaSpacing.lg + 1.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         Text(

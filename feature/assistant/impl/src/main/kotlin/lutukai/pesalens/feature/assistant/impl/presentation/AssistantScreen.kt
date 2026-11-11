@@ -48,6 +48,8 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.datetime.number
@@ -225,7 +227,8 @@ private fun TopBar(mode: AssistantMode, onSettings: () -> Unit) {
         horizontalArrangement = Arrangement.spacedBy(PesaSpacing.sm),
     ) {
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-            Text(stringResource(R.string.assistant_title), style = PesaLensTheme.type.titleSmall, color = colors.text)
+            // 18sp with the prototype's 1.1 line height, so the pill row sits close under the title.
+            Text(stringResource(R.string.assistant_title), style = PesaLensTheme.type.title.copy(lineHeight = 19.8.sp), color = colors.text)
             FlowRow(
                 verticalArrangement = Arrangement.spacedBy(PesaSpacing.xs),
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -233,8 +236,12 @@ private fun TopBar(mode: AssistantMode, onSettings: () -> Unit) {
             ) {
                 ModePill(mode)
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(PesaSpacing.xs)) {
-                    Icon(PesaIcons.Database, contentDescription = null, tint = colors.textMuted, modifier = Modifier.size(14.dp))
-                    Text(stringResource(R.string.assistant_sample_data), style = PesaLensTheme.type.caption, color = colors.textMuted)
+                    Icon(PesaIcons.Database, contentDescription = null, tint = colors.textMuted, modifier = Modifier.size(12.dp))
+                    Text(
+                        stringResource(R.string.assistant_sample_data),
+                        style = PesaLensTheme.type.kicker.copy(letterSpacing = TextUnit.Unspecified),
+                        color = colors.textMuted,
+                    )
                 }
             }
         }

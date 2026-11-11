@@ -14,9 +14,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import lutukai.pesalens.core.designsystem.theme.PesaLensTheme
 import lutukai.pesalens.core.designsystem.theme.PesaSpacing
@@ -45,6 +47,8 @@ fun PesaCallout(
     title: String? = null,
     footnote: String? = null,
     liveRegion: Boolean = false,
+    textStyle: TextStyle = PesaLensTheme.type.body,
+    iconSize: Dp = 20.dp,
 ) {
     val colors = PesaLensTheme.colors
     val type = PesaLensTheme.type
@@ -72,11 +76,12 @@ fun PesaCallout(
         contentColor = ink,
         border = edge?.let { BorderStroke(1.dp, it) },
     ) {
-        Row(Modifier.padding(PesaSpacing.md), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.Top) {
-            Icon(icon, contentDescription = null, tint = iconInk, modifier = Modifier.size(20.dp))
+        // 12dp padding inside the 1dp border (CSS draws the border outside the padding).
+        Row(Modifier.padding(PesaSpacing.md + if (edge != null) 1.dp else 0.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.Top) {
+            Icon(icon, contentDescription = null, tint = iconInk, modifier = Modifier.size(iconSize))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(PesaSpacing.xs)) {
                 if (title != null) Text(title, style = type.bodyStrong, color = ink)
-                Text(text, style = type.body, color = ink)
+                Text(text, style = textStyle, color = ink)
                 if (footnote != null) Text(footnote, style = type.meta, color = colors.textMuted)
             }
         }

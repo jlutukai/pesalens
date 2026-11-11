@@ -66,9 +66,10 @@ fun PesaComposer(
             singleLine = true,
             cursorBrush = SolidColor(colors.accent),
             decorationBox = { inner ->
-                Box(Modifier.padding(horizontal = 18.dp), contentAlignment = Alignment.CenterStart) {
+                // 18dp padding inside the 1dp border, as in CSS.
+                Box(Modifier.padding(horizontal = 19.dp), contentAlignment = Alignment.CenterStart) {
                     if (value.isEmpty()) {
-                        Text(placeholder, style = type.body, color = colors.textMuted)
+                        Text(placeholder, style = type.body, color = colors.placeholder)
                     }
                     inner()
                 }

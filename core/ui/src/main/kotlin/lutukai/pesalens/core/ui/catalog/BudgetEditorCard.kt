@@ -3,6 +3,8 @@ package lutukai.pesalens.core.ui.catalog
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -46,6 +48,7 @@ import kotlin.math.abs
  * Editable budget draft: income, allocation bar, per-category limits, totals, the over-budget alert and Cancel / Review.
  * Saved and Discarded drafts lock every input and show a status line instead of the actions.
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun BudgetEditorCard(
     ui: BudgetUi,
@@ -84,6 +87,7 @@ fun BudgetEditorCard(
                 horizontalPadding = 10.dp,
                 textStyle = type.body.copy(fontFeatureSettings = "tnum"),
                 prefixStyle = type.meta,
+                prefixGap = 4.dp,
             )
         }
         if (LocalDensity.current.fontScale >= StackedFontScale) {
@@ -133,7 +137,12 @@ fun BudgetEditorCard(
         }
 
         if (editable) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)) {
+            // At large font sizes a button that no longer fits moves to its own line rather than wrapping its label.
+            FlowRow(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
                 PesaButton(stringResource(R.string.core_ui_budget_cancel), onCancel, style = PesaButtonStyle.Text)
                 PesaButton(stringResource(R.string.core_ui_budget_review), onReview)
             }
@@ -144,7 +153,7 @@ fun BudgetEditorCard(
                 stringResource(R.string.core_ui_budget_status_discarded)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                Icon(PesaIcons.LockSimple, contentDescription = null, tint = colors.textMuted, modifier = Modifier.size(16.dp))
+                Icon(PesaIcons.LockSimple, contentDescription = null, tint = colors.textMuted, modifier = Modifier.size(13.dp))
                 Text(status, style = type.meta, color = colors.textMuted)
             }
         }
@@ -164,7 +173,8 @@ internal fun BudgetWarning(text: String, style: TextStyle, assertive: Boolean) {
         contentColor = colors.warnText,
         border = BorderStroke(1.dp, colors.warnBorder),
     ) {
-        Row(Modifier.padding(12.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.Top) {
+        // 12dp padding inside the 1dp border, as in CSS.
+        Row(Modifier.padding(13.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.Top) {
             Icon(PesaIcons.Warning, contentDescription = null, modifier = Modifier.size(18.dp))
             Text(text, style = style, color = colors.warnText)
         }

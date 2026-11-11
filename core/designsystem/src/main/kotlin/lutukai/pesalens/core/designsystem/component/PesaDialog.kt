@@ -7,7 +7,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -39,6 +40,7 @@ private val DialogMaxWidth = 560.dp
 
 /**
  * Alert dialog on M3 [BasicAlertDialog]: dialog shape, 22dp padding, 14dp gap, max 560dp wide, on the scrim token.
+ * [subtitle] sits 4dp under the title; body text belongs in [content].
  * Elevation is a 1dp border plus M3 shadow elevation (the prototype's `--shd`: hairline edge and soft ambient shadow).
  */
 @Composable
@@ -63,6 +65,7 @@ fun PesaAlertDialog(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun PesaAlertDialogContent(
     title: String,
@@ -96,14 +99,23 @@ internal fun PesaAlertDialogContent(
             border = BorderStroke(1.dp, colors.border),
             shadowElevation = 16.dp,
         ) {
-            Column(Modifier.padding(22.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            // 22dp padding inside the 1dp border, as in CSS.
+            Column(Modifier.padding(23.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                 if (icon != null) {
                     Icon(icon, contentDescription = null, tint = iconTint ?: colors.accentText, modifier = Modifier.size(26.dp))
                 }
-                Text(title, style = type.titleMedium, color = colors.text, modifier = Modifier.semantics { heading() })
-                if (subtitle != null) Text(subtitle, style = type.bodySmall.copy(lineHeight = 21.sp), color = colors.textMuted)
+                // A subtitle belongs to the title (4dp apart); body copy goes in [content], 14dp below.
+                Column(verticalArrangement = Arrangement.spacedBy(PesaSpacing.xs)) {
+                    Text(title, style = type.titleMedium, color = colors.text, modifier = Modifier.semantics { heading() })
+                    if (subtitle != null) Text(subtitle, style = type.bodySmall.copy(lineHeight = 21.sp), color = colors.textMuted)
+                }
                 content()
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(PesaSpacing.sm, Alignment.End)) {
+                // At large font sizes a button that no longer fits moves to its own line rather than wrapping its label.
+                FlowRow(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(PesaSpacing.sm, Alignment.End),
+                    verticalArrangement = Arrangement.spacedBy(PesaSpacing.sm),
+                ) {
                     dismiss()
                     confirm()
                 }

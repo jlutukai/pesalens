@@ -32,7 +32,8 @@ fun ModelFileFacts(modifier: Modifier = Modifier) {
         contentColor = colors.text,
         border = BorderStroke(1.dp, colors.border),
     ) {
-        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        // 14dp padding inside the 1dp border, as in CSS.
+        Column(Modifier.padding(15.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             FactRow(stringResource(R.string.core_ui_model_facts_model_label)) {
                 Text(stringResource(R.string.core_ui_model_facts_model_name), style = PesaLensTheme.type.bodySmall, color = colors.text)
             }
@@ -66,6 +67,12 @@ private fun FactRow(label: String, value: @Composable () -> Unit) {
 private fun Illustrative(value: String) {
     Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
         Text(value, style = PesaLensTheme.type.bodySmall, color = PesaLensTheme.colors.text)
-        PesaPill(stringResource(R.string.core_ui_model_facts_illustrative), PillTone.Dashed, height = 20.dp)
+        PesaPill(
+            stringResource(R.string.core_ui_model_facts_illustrative),
+            PillTone.Dashed,
+            height = 20.dp,
+            textStyle = PesaLensTheme.type.caption,
+            horizontalPadding = 6.dp,
+        )
     }
 }

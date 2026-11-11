@@ -17,6 +17,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import lutukai.pesalens.core.designsystem.component.PesaButton
+import lutukai.pesalens.core.designsystem.component.PesaButtonSize
 import lutukai.pesalens.core.designsystem.component.PesaCard
 import lutukai.pesalens.core.designsystem.component.PesaIconTile
 import lutukai.pesalens.core.designsystem.component.TileTone
@@ -67,7 +68,7 @@ fun StatusNotice(
                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                actions.forEach { PesaButton(it.label, onClick = { onAction(it.onClickKey) }) }
+                actions.forEach { PesaButton(it.label, onClick = { onAction(it.onClickKey) }, size = PesaButtonSize.Small) }
             }
         }
     }

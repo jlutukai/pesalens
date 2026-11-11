@@ -69,7 +69,8 @@ fun AssistantBubble(text: String) {
                 .maxWidthFraction(0.88f)
                 .background(colors.surface, PesaLensTheme.shapes.bubbleBot)
                 .border(BorderStroke(1.dp, colors.border), PesaLensTheme.shapes.bubbleBot)
-                .padding(horizontal = 14.dp, vertical = 11.dp),
+                // 14/11dp padding inside the 1dp border, as in CSS.
+                .padding(horizontal = 15.dp, vertical = 12.dp),
         )
     }
 }
@@ -84,7 +85,7 @@ fun ThinkingBubble(label: String) {
                 .semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite }
                 .background(colors.surface, PesaLensTheme.shapes.bubbleBot)
                 .border(BorderStroke(1.dp, colors.border), PesaLensTheme.shapes.bubbleBot)
-                .padding(horizontal = 14.dp, vertical = 10.dp),
+                .padding(horizontal = 15.dp, vertical = 11.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
@@ -103,7 +104,7 @@ fun MessageCaption(mode: AssistantMode) {
         AssistantMode.OnDevice -> PesaIcons.CpuFill to stringResource(R.string.core_ui_caption_on_device)
     }
     Row(Modifier.padding(start = PesaSpacing.xs), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-        Icon(icon, contentDescription = null, tint = colors.textMuted, modifier = Modifier.size(12.dp))
+        Icon(icon, contentDescription = null, tint = colors.textMuted, modifier = Modifier.size(11.dp))
         Text(text, style = PesaLensTheme.type.caption, color = colors.textMuted)
     }
 }

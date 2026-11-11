@@ -93,7 +93,7 @@ fun <T> PesaSegmentedControl(
                 border = BorderStroke(1.dp, if (isSelected) colors.accent else Color.Transparent),
                 contentPadding = PaddingValues(horizontal = 14.dp),
             ) {
-                Icon(option.icon, contentDescription = null, modifier = Modifier.size(18.dp))
+                Icon(option.icon, contentDescription = null, modifier = Modifier.size(14.dp))
                 Spacer(Modifier.width(6.dp))
                 Text(option.label, style = PesaLensTheme.type.label)
             }

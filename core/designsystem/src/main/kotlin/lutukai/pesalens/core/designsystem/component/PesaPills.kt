@@ -22,6 +22,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -43,9 +44,19 @@ enum class PillTone {
 
 private val PillText @Composable get() = PesaLensTheme.type.kicker.copy(letterSpacing = TextUnit.Unspecified)
 
-/** Pill with an optional leading icon. Radius is half the height (22dp -> 11, 24dp -> 12). */
+/**
+ * Pill with an optional leading icon sized like its 12sp text. Radius is half the height (22dp -> 11, 24dp -> 12).
+ * [textStyle] and [horizontalPadding] let a compact tag (the 11sp "illustrative" tag) shrink.
+ */
 @Composable
-fun PesaPill(text: String, tone: PillTone, icon: ImageVector? = null, height: Dp = 22.dp) {
+fun PesaPill(
+    text: String,
+    tone: PillTone,
+    icon: ImageVector? = null,
+    height: Dp = 22.dp,
+    textStyle: TextStyle? = null,
+    horizontalPadding: Dp = PesaSpacing.sm,
+) {
     val colors = PesaLensTheme.colors
     val shape = RoundedCornerShape(height / 2)
     val content = if (tone == PillTone.Accent) colors.accentText else colors.text
@@ -64,13 +75,14 @@ fun PesaPill(text: String, tone: PillTone, icon: ImageVector? = null, height: Dp
             )
         }
     }
+    val style = textStyle ?: PillText.copy(fontWeight = if (tone == PillTone.Dashed) FontWeight.Normal else FontWeight.Medium)
     Row(
-        styled.padding(horizontal = PesaSpacing.sm),
+        styled.padding(horizontal = horizontalPadding),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(PesaSpacing.xs),
     ) {
-        if (icon != null) Icon(icon, contentDescription = null, tint = content, modifier = Modifier.size(14.dp))
-        Text(text, style = PillText.copy(fontWeight = if (tone == PillTone.Dashed) FontWeight.Normal else FontWeight.Medium), color = content, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        if (icon != null) Icon(icon, contentDescription = null, tint = content, modifier = Modifier.size(12.dp))
+        Text(text, style = style, color = content, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
 

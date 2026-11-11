@@ -21,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import lutukai.pesalens.core.designsystem.theme.PesaColors
@@ -31,7 +32,7 @@ enum class PesaButtonStyle {
     /** 1dp accent border, accentText label, transparent. */
     Outlined,
 
-    /** tintSubtle fill with a 1.5dp accent border. */
+    /** tintSubtle fill with an accent border (1.5dp when large, else 1dp). */
     Tonal,
 
     /** Borderless, text color. */
@@ -47,6 +48,18 @@ enum class PesaButtonStyle {
     Warn,
 }
 
+/** Label size and padding: the prototype's 14px compact buttons, 15px default and 16px large. */
+enum class PesaButtonSize {
+    /** 14sp label, 16dp side padding (notice actions, muted text buttons). */
+    Small,
+
+    /** 15sp label, 18dp side padding. */
+    Medium,
+
+    /** 16sp label, 52dp tall, 14dp corners. */
+    Large,
+}
+
 internal const val DISABLED_ALPHA = 0.45f
 
 private val LargeHeight = 52.dp
@@ -60,12 +73,19 @@ fun PesaButton(
     style: PesaButtonStyle = PesaButtonStyle.Outlined,
     leadingIcon: ImageVector? = null,
     enabled: Boolean = true,
-    large: Boolean = false,
+    size: PesaButtonSize = PesaButtonSize.Medium,
 ) {
     val colors = PesaLensTheme.colors
+    val type = PesaLensTheme.type
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
-    val look = style.look(colors, pressed)
+    val large = size == PesaButtonSize.Large
+    val look = style.look(colors, pressed, large)
+    val labelStyle = when (size) {
+        PesaButtonSize.Small -> type.label
+        PesaButtonSize.Medium -> type.bodyStrong
+        PesaButtonSize.Large -> type.subtitle
+    }
     val restShape = if (large) PesaLensTheme.shapes.buttonLarge else PesaLensTheme.shapes.button
     // The pressed shape is a tighter radius; M3 morphs between the two.
     val pressedShape = RoundedCornerShape(if (large) 8.dp else 6.dp)
@@ -85,22 +105,23 @@ fun PesaButton(
         } else {
             null
         },
-        contentPadding = PaddingValues(horizontal = PesaSpacing.lg),
+        contentPadding = PaddingValues(horizontal = if (size == PesaButtonSize.Small) PesaSpacing.lg else 18.dp),
         interactionSource = interaction,
     ) {
         if (leadingIcon != null) {
-            Icon(leadingIcon, contentDescription = null, modifier = Modifier.size(18.dp))
+            // The prototype's icon glyph is sized by the label's font size.
+            Icon(leadingIcon, contentDescription = null, modifier = Modifier.size(with(LocalDensity.current) { labelStyle.fontSize.toDp() }))
             Spacer(Modifier.width(PesaSpacing.sm))
         }
-        Text(text, style = PesaLensTheme.type.label)
+        Text(text, style = labelStyle)
     }
 }
 
 private class ButtonLook(val container: Color, val content: Color, val borderWidth: Dp = 0.dp, val borderColor: Color = Color.Transparent)
 
-private fun PesaButtonStyle.look(colors: PesaColors, pressed: Boolean): ButtonLook = when (this) {
+private fun PesaButtonStyle.look(colors: PesaColors, pressed: Boolean, large: Boolean): ButtonLook = when (this) {
     PesaButtonStyle.Outlined -> ButtonLook(Color.Transparent, colors.accentText, 1.dp, colors.accent)
-    PesaButtonStyle.Tonal -> ButtonLook(colors.tintSubtle, colors.accentText, 1.5.dp, colors.accent)
+    PesaButtonStyle.Tonal -> ButtonLook(colors.tintSubtle, colors.accentText, if (large) 1.5.dp else 1.dp, colors.accent)
     PesaButtonStyle.Text -> ButtonLook(Color.Transparent, colors.text)
     PesaButtonStyle.TextMuted -> ButtonLook(Color.Transparent, if (pressed) colors.accentText else colors.textMuted)
     PesaButtonStyle.Neutral -> ButtonLook(Color.Transparent, colors.text, 1.dp, colors.border)

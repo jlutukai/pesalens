@@ -26,6 +26,9 @@ data class PesaColors(
     val scrim: Color,
     val isDark: Boolean,
 ) {
+    /** Input placeholder: the text colour at 55% (the prototype's `::placeholder { opacity: .55 }`). */
+    val placeholder: Color get() = text.copy(alpha = 0.55f)
+
     companion object {
         val Light = PesaColors(
             background = Color(0xFFF3F5FE),

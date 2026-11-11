@@ -20,7 +20,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
@@ -63,12 +62,8 @@ fun PesaExpandable(title: String, icon: ImageVector, modifier: Modifier = Modifi
             Icon(icon, contentDescription = null, tint = colors.text, modifier = Modifier.size(20.dp))
             Spacer(Modifier.width(14.dp))
             Text(title, style = PesaLensTheme.type.body, color = colors.text, modifier = Modifier.weight(1f))
-            Icon(
-                PesaIcons.CaretDown,
-                contentDescription = null,
-                tint = colors.textMuted,
-                modifier = Modifier.size(16.dp).rotate(if (expanded) 180f else 0f),
-            )
+            // Like the prototype's <summary>, the caret keeps pointing down; the state is in the semantics actions.
+            Icon(PesaIcons.CaretDown, contentDescription = null, tint = colors.textMuted, modifier = Modifier.size(16.dp))
         }
         AnimatedVisibility(expanded) { content() }
     }

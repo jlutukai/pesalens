@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -93,7 +94,10 @@ fun PesaNavRow(
     }
 }
 
-/** Bordered option card: icon tile, title and subtitle, chevron. */
+/**
+ * Bordered option card: icon tile, title and subtitle, chevron. The defaults are the app-lock options (72dp, 12/14dp
+ * padding, 44dp tile, 14dp gap); the settings model row is 14dp all round with a 40dp tile and a 12dp gap.
+ */
 @Composable
 fun PesaCardRow(
     title: String,
@@ -101,6 +105,10 @@ fun PesaCardRow(
     icon: ImageVector,
     onClick: () -> Unit,
     minHeight: Dp = 72.dp,
+    verticalPadding: Dp = PesaSpacing.md,
+    tileSize: Dp = 44.dp,
+    tileShape: Shape = PesaLensTheme.shapes.segment,
+    gap: Dp = 14.dp,
 ) {
     val colors = PesaLensTheme.colors
     Surface(
@@ -111,12 +119,13 @@ fun PesaCardRow(
         contentColor = colors.text,
         border = BorderStroke(1.dp, colors.border),
     ) {
+        // The padding sits inside the 1dp border, as in CSS.
         Row(
-            Modifier.padding(horizontal = 14.dp, vertical = PesaSpacing.md),
+            Modifier.padding(horizontal = 15.dp, vertical = verticalPadding + 1.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            horizontalArrangement = Arrangement.spacedBy(gap),
         ) {
-            PesaIconTile(icon, size = 44.dp, iconSize = 22.dp, shape = PesaLensTheme.shapes.segment)
+            PesaIconTile(icon, size = tileSize, iconSize = tileSize / 2, shape = tileShape)
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(PesaSpacing.xxs)) {
                 Text(title, style = PesaLensTheme.type.bodyStrong, color = colors.text)
                 Text(subtitle, style = PesaLensTheme.type.meta, color = colors.textMuted)
