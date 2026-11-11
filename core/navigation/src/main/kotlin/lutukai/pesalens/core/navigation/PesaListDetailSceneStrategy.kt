@@ -45,10 +45,31 @@ class PesaListDetailSceneStrategy<T : Any>(private val listDetail: ListDetailSce
     }
 }
 
-/** [PesaListDetailSceneStrategy] over a remembered [ListDetailSceneStrategy] with [directive]. */
+/**
+ * [PesaListDetailSceneStrategy] over a remembered [ListDetailSceneStrategy] with [directive], minus the scaffold's
+ * focus move (see [withoutAutoFocus]).
+ */
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 fun <T : Any> rememberPesaListDetailSceneStrategy(directive: PaneScaffoldDirective): PesaListDetailSceneStrategy<T> {
-    val listDetail = rememberListDetailSceneStrategy<T>(directive = directive)
+    val listDetail = rememberListDetailSceneStrategy<T>(directive = directive.withoutAutoFocus())
     return remember(listDetail) { PesaListDetailSceneStrategy(listDetail) }
 }
+
+/**
+ * [this] directive with the scaffold's focus move turned off. Left on, the scaffold focuses the current pane whenever
+ * it changes. In touch mode the only focusable control in the chat pane is the composer, so finishing onboarding or
+ * closing Settings beside the chat opened the keyboard unasked. Single-pane scenes never move focus, so panes now
+ * behave the same at every width. ([PaneScaffoldDirective.copy] cannot change this flag.)
+ */
+@OptIn(ExperimentalMaterial3AdaptiveApi::class)
+fun PaneScaffoldDirective.withoutAutoFocus(): PaneScaffoldDirective = PaneScaffoldDirective(
+    maxHorizontalPartitions = maxHorizontalPartitions,
+    horizontalPartitionSpacerSize = horizontalPartitionSpacerSize,
+    maxVerticalPartitions = maxVerticalPartitions,
+    verticalPartitionSpacerSize = verticalPartitionSpacerSize,
+    defaultPanePreferredWidth = defaultPanePreferredWidth,
+    defaultPanePreferredHeight = defaultPanePreferredHeight,
+    excludedBounds = excludedBounds,
+    shouldAutoFocusCurrentDestination = false,
+)

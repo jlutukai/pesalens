@@ -88,9 +88,6 @@ abstract class AdaptiveScreenshots {
 
     /** Captures the activity's root, or with [topWindow] the last (overlay) window's root. */
     protected fun capture(name: String, topWindow: Boolean = false) {
-        // The composer, the only control focusable in touch mode, takes focus once the assistant shows. Its cursor
-        // blinks on a timer that the real-time waits above (the snackbar timeout) shift, so drop focus for the shot.
-        composeRule.runOnUiThread { composeRule.activity.window.decorView.findFocus()?.clearFocus() }
         // Let the press ripple and focus highlight of the last click fade out; they would differ run to run.
         repeat(30) {
             composeRule.mainClock.advanceTimeBy(100)

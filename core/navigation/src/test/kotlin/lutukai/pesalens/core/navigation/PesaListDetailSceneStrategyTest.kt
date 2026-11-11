@@ -5,6 +5,7 @@ import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldDefaults
 import androidx.compose.material3.adaptive.layout.PaneScaffoldDirective
 import androidx.compose.material3.adaptive.navigation.BackNavigationBehavior
 import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.scene.Scene
@@ -81,6 +82,32 @@ class PesaListDetailSceneStrategyTest {
         assertTrue(include(listOf(PesaPanes.list {})))
         assertTrue(include(listOf(PesaPanes.list {}, PesaPanes.detail(), PesaPanes.extra())))
         assertTrue(include(listOf(emptyMap(), PesaPanes.list {}, PesaPanes.extra())))
+    }
+
+    @Test
+    fun withoutAutoFocus_turnsOffOnlyTheFocusMove() {
+        val hinge = Rect(400f, 0f, 420f, 800f)
+        val directive = PaneScaffoldDirective(
+            maxHorizontalPartitions = 2,
+            horizontalPartitionSpacerSize = 24.dp,
+            maxVerticalPartitions = 1,
+            verticalPartitionSpacerSize = 8.dp,
+            defaultPanePreferredWidth = 360.dp,
+            defaultPanePreferredHeight = 412.dp,
+            excludedBounds = listOf(hinge),
+            shouldAutoFocusCurrentDestination = true,
+        )
+
+        val result = directive.withoutAutoFocus()
+
+        assertFalse(result.shouldAutoFocusCurrentDestination)
+        assertEquals(2, result.maxHorizontalPartitions)
+        assertEquals(24.dp, result.horizontalPartitionSpacerSize)
+        assertEquals(1, result.maxVerticalPartitions)
+        assertEquals(8.dp, result.verticalPartitionSpacerSize)
+        assertEquals(360.dp, result.defaultPanePreferredWidth)
+        assertEquals(412.dp, result.defaultPanePreferredHeight)
+        assertEquals(listOf(hinge), result.excludedBounds)
     }
 
     private fun sceneFor(entries: List<NavEntry<String>>, partitions: Int): Scene<String>? =
