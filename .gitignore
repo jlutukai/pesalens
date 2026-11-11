@@ -8,8 +8,12 @@
 /.idea/navEditor.xml
 /.idea/assetWizardSettings.xml
 .DS_Store
-/build
+build/
+.kotlin/
 /captures
 .externalNativeBuild
 .cxx
 local.properties
+
+# Local planning docs and design references (not published)
+docs/

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_title">Settings</string>
+    <string name="settings_back">Back</string>
+
+    <string name="settings_mode_label">Assistant mode</string>
+    <string name="settings_mode_cloud">Cloud AI</string>
+    <string name="settings_mode_on_device">On-device AI</string>
+    <string name="settings_mode_help_on_device">Questions are interpreted by the model on this phone and work offline. Figures are always computed by the app.</string>
+    <string name="settings_mode_help_cloud_ready">Cloud AI needs internet and receives your question and category totals. Switch to keep everything on this phone.</string>
+    <string name="settings_mode_help_cloud_setup">Cloud AI needs internet and receives your question and category totals. Set up the model below to enable on-device AI.</string>
+
+    <string name="settings_model_title">On-device model</string>
+    <string name="settings_model_not_downloaded">Not downloaded · optional</string>
+    <string name="settings_model_ready_to_download">Ready to download</string>
+    <string name="settings_model_downloading">Downloading · %1$d%%</string>
+    <string name="settings_model_verifying">Verifying…</string>
+    <string name="settings_model_ready">Ready on this device</string>
+    <string name="settings_model_failed">Download failed · tap to retry</string>
+    <string name="settings_model_unsupported">Not supported on this device</string>
+
+    <string name="settings_security_header">Security</string>
+    <string name="settings_app_lock">App lock</string>
+    <string name="settings_lock_off">Off</string>
+    <string name="settings_lock_pin">PIN</string>
+    <string name="settings_lock_biometric">Fingerprint or face unlock</string>
+
+    <string name="settings_appearance_header">Appearance</string>
+    <string name="settings_theme">Theme</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+
+    <string name="settings_data_header">Data</string>
+    <string name="settings_clear_conversation">Clear conversation</string>
+    <string name="settings_reset_sample_data">Reset sample data</string>
+    <string name="settings_reset_sample_data_subtitle">Deletes saved budgets and changes</string>
+
+    <string name="settings_privacy_title">Privacy and data</string>
+    <string name="settings_privacy_local">Sample transactions and saved budgets stay in app storage on this phone. There\'s no account or analytics.</string>
+    <string name="settings_privacy_cloud"><b>Cloud AI</b> sends your question, the selected month and category totals to the AI provider over HTTPS. Individual transactions and budgets are never sent.</string>
+    <string name="settings_privacy_on_device"><b>On-device AI</b> sends nothing; the only network use is the model download. The conversation is cleared when the app closes.</string>
+    <string name="settings_about_title">About this project</string>
+    <string name="settings_about_body">PesaLens is an educational Android portfolio app built with Kotlin, Jetpack Compose and Room. It isn\'t a bank or a financial adviser, and it doesn\'t connect to M-Pesa or any account. Version 1.0.</string>
+
+    <string name="settings_clear_dialog_title">Clear conversation?</string>
+    <string name="settings_clear_dialog_body">Messages and results in this session will be removed. Saved budgets aren\'t affected.</string>
+    <string name="settings_clear_dialog_cancel">Cancel</string>
+    <string name="settings_clear_dialog_confirm">Clear</string>
+    <string name="settings_reset_dialog_title">Reset sample data?</string>
+    <string name="settings_reset_dialog_body">This restores the original sample transactions. <b>Saved budgets and any sample-data changes will be permanently deleted</b>, and the conversation will be cleared.</string>
+    <string name="settings_reset_dialog_cancel">Cancel</string>
+    <string name="settings_reset_dialog_confirm">Delete and reset</string>
+
+    <string name="settings_message_cloud">Switched to cloud AI.</string>
+    <string name="settings_message_on_device">Switched to on-device AI.</string>
+    <string name="settings_message_cleared">Conversation cleared.</string>
+    <string name="settings_message_reset">Sample data restored. Saved budgets were deleted.</string>
+    <!-- not in prototype -->
+    <string name="settings_message_reset_failed">Couldn\'t reset sample data. Nothing was changed.</string>
+</resources>

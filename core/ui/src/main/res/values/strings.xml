@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Intro suggestions (prototype SUGGEST) -->
+    <string name="core_ui_suggest_where_money_went">Where did my money go this month?</string>
+    <string name="core_ui_suggest_afford_laptop">Can I afford a laptop?</string>
+    <string name="core_ui_suggest_create_budget">Help me create a budget</string>
+
+    <!-- Mode pills -->
+    <string name="core_ui_mode_cloud_online">Cloud AI · online</string>
+    <string name="core_ui_mode_on_device_offline">On-device AI · offline</string>
+    <string name="core_ui_sample_data">Sample data</string>
+
+    <!-- Message captions -->
+    <string name="core_ui_caption_cloud">Cloud AI · figures computed by PesaLens</string>
+    <string name="core_ui_caption_on_device">On-device AI · figures computed by PesaLens</string>
+    <!-- Mode banner (prototype lines 87-92) -->
+    <string name="core_ui_banner_cloud_title">Cloud AI interprets your question.</string>
+    <string name="core_ui_banner_cloud_body">Your question and category totals go to the AI provider; transactions stay here. PesaLens computes every figure.</string>
+    <string name="core_ui_banner_on_device_title">On-device AI interprets your question.</string>
+    <string name="core_ui_banner_on_device_body">PesaLens computes every figure from the sample data. Nothing leaves this phone.</string>
+
+    <!-- Spending card -->
+    <string name="core_ui_spending_kicker">Spending · %1$s</string>
+    <plurals name="core_ui_spending_total_caption">
+        <item quantity="one">Total across %1$d category · %2$s</item>
+        <item quantity="other">Total across %1$d categories · %2$s</item>
+    </plurals>
+    <string name="core_ui_spending_sample_tag">Sample</string>
+    <string name="core_ui_spending_insight_footnote">Insight computed by the app from sample data</string>
+    <string name="core_ui_spending_read_as_text">Read chart as text</string>
+    <string name="core_ui_category_subtitle">%1$d%% · %2$s</string>
+    <string name="core_ui_category_description">%1$s, %2$s, %3$d percent. Open transactions</string>
+
+    <!-- Chart pattern names (prototype PATNAME) -->
+    <string name="core_ui_pattern_solid">solid</string>
+    <string name="core_ui_pattern_diagonal">diagonal stripes</string>
+    <string name="core_ui_pattern_dots">dots</string>
+    <string name="core_ui_pattern_horizontal">horizontal lines</string>
+    <string name="core_ui_pattern_reverse">reverse stripes</string>
+    <string name="core_ui_pattern_vertical">vertical lines</string>
+
+    <!-- Status notices (prototype notice(v, m)); screens pass these to StatusNotice -->
+    <string name="core_ui_notice_no_data_title">No spending data for %1$s</string>
+    <string name="core_ui_notice_no_data_body">The sample dataset covers September to November 2026. Try a month in that range.</string>
+    <string name="core_ui_notice_no_data_action">Show %1$s</string>
+    <string name="core_ui_notice_unsupported_title">I can\'t help with that yet</string>
+    <string name="core_ui_notice_unsupported_body">PesaLens answers questions about spending, planned purchases and budgets in your sample data. It can\'t give investment advice or real-world information. Try one of these:</string>
+    <string name="core_ui_notice_model_unavailable_title">The on-device model isn\'t ready</string>
+    <string name="core_ui_notice_model_unavailable_body">It hasn\'t been downloaded, or it couldn\'t start on this phone. Your question wasn\'t sent anywhere.</string>
+    <string name="core_ui_notice_model_unavailable_action_setup">Set up model</string>
+    <string name="core_ui_notice_use_cloud_ai">Use cloud AI</string>
+    <string name="core_ui_notice_offline_title">Cloud AI can\'t be reached</string>
+    <string name="core_ui_notice_offline_body">You seem to be offline, so your question wasn\'t sent. Try again when you\'re connected, or use on-device AI, which works offline.</string>
+    <string name="core_ui_notice_try_again">Try again</string>
+    <string name="core_ui_notice_use_on_device_ai">Use on-device AI</string>
+    <string name="core_ui_notice_set_up_on_device_ai">Set up on-device AI</string>
+    <string name="core_ui_notice_invalid_title">That response couldn\'t be used</string>
+    <string name="core_ui_notice_invalid_body">The AI returned something PesaLens couldn\'t validate, so nothing was shown or changed. Try again, or switch AI mode.</string>
+    <string name="core_ui_notice_save_failed_title">Budget not saved</string>
+    <string name="core_ui_notice_save_failed_body">PesaLens couldn\'t write to storage on this device. Your draft is unchanged and nothing was saved.</string>
+
+    <!-- Affordability details form (prototype m.isDetails) -->
+    <string name="core_ui_details_kicker">Laptop estimate · %1$s</string>
+    <string name="core_ui_details_title">I need two more amounts</string>
+    <string name="core_ui_details_body">These stay on this device and are only used for this estimate.</string>
+    <string name="core_ui_details_available_label">Amount already set aside</string>
+    <string name="core_ui_details_available_placeholder">e.g. 30,000</string>
+    <string name="core_ui_details_available_missing">Needed to work out the remaining amount</string>
+    <string name="core_ui_details_monthly_label">Monthly savings toward it</string>
+    <string name="core_ui_details_monthly_placeholder">e.g. 10,000</string>
+    <string name="core_ui_details_monthly_missing">Needed to estimate a timeline. Enter 0 if none.</string>
+    <string name="core_ui_details_use_sample">Use sample values</string>
+    <string name="core_ui_details_submit">Show estimate</string>
+
+    <!-- Affordability card (prototype m.isAfford) -->
+    <string name="core_ui_afford_group">Purchase estimate</string>
+    <string name="core_ui_afford_kicker">Purchase estimate · Laptop</string>
+    <string name="core_ui_afford_estimate_tag">Estimate</string>
+    <plurals name="core_ui_afford_headline">
+        <item quantity="one">About %d month</item>
+        <item quantity="other">About %d months</item>
+    </plurals>
+    <string name="core_ui_afford_headline_detail">to save the remaining %1$s at %2$s a month, around %3$s</string>
+    <string name="core_ui_afford_no_end_date_callout">There is no estimated completion date at this savings rate.</string>
+    <string name="core_ui_afford_covered_callout">The amount set aside covers this purchase. Other costs and commitments aren\'t included here.</string>
+    <string name="core_ui_afford_percent_set_aside">%1$d%% set aside</string>
+    <string name="core_ui_afford_goal">Goal %1$s</string>
+    <string name="core_ui_afford_row_price">Purchase price</string>
+    <string name="core_ui_afford_row_available">Already available</string>
+    <string name="core_ui_afford_row_remaining">Remaining</string>
+    <string name="core_ui_afford_row_timeline">Estimated timeline</string>
+    <string name="core_ui_afford_timeline_on_track">%1$d mo · %2$s</string>
+    <string name="core_ui_afford_timeline_covered">Already covered</string>
+    <string name="core_ui_afford_timeline_no_end">No end date</string>
+    <string name="core_ui_afford_what_if">What if…</string>
+    <string name="core_ui_afford_what_if_monthly">Monthly savings</string>
+    <string name="core_ui_afford_what_if_available">Set aside now</string>
+    <string name="core_ui_afford_monthly_decrease">Decrease monthly savings by KSh 5,000</string>
+    <string name="core_ui_afford_monthly_increase">Increase monthly savings by KSh 5,000</string>
+    <string name="core_ui_afford_available_decrease">Decrease amount set aside by KSh 10,000</string>
+    <string name="core_ui_afford_available_increase">Increase amount set aside by KSh 10,000</string>
+    <string name="core_ui_afford_assumptions">Assumes no interest, fees, inflation or income changes. Doesn\'t consider debts, an emergency fund or other goals.</string>
+    <string name="core_ui_afford_educational">Educational estimate, not financial advice</string>
+
+    <!-- Budget editor (prototype m.isBudget) -->
+    <string name="core_ui_budget_group">Budget draft</string>
+    <string name="core_ui_budget_kicker">Budget draft · %1$s</string>
+    <string name="core_ui_budget_title">Suggested from your sample spending</string>
+    <string name="core_ui_budget_hint">Edit any limit. Nothing is saved until you confirm.</string>
+    <string name="core_ui_budget_income_label">Monthly income</string>
+    <string name="core_ui_budget_income_description">Monthly income in shillings</string>
+    <string name="core_ui_budget_allocated">%1$s of %2$s allocated</string>
+    <string name="core_ui_budget_total">Total budgeted</string>
+    <string name="core_ui_budget_over_by">Over budget by</string>
+    <string name="core_ui_budget_unallocated">Unallocated</string>
+    <string name="core_ui_budget_over_alert">Category limits exceed income by %1$s. Lower a limit, or review and save it on purpose.</string>
+    <string name="core_ui_budget_cancel">Cancel</string>
+    <string name="core_ui_budget_review">Review budget</string>
+    <string name="core_ui_budget_status_saved">Saved · %1$s</string>
+    <string name="core_ui_budget_status_discarded">Discarded · not saved</string>
+    <string name="core_ui_budget_line_decrease">Decrease %1$s by KSh 500</string>
+    <string name="core_ui_budget_line_increase">Increase %1$s by KSh 500</string>
+    <string name="core_ui_budget_line_description">%1$s limit in shillings</string>
+
+    <!-- Budget saved card (prototype m.isSaved) -->
+    <string name="core_ui_budget_saved_title">Budget saved for %1$s</string>
+    <string name="core_ui_budget_saved_body">%1$s Stored on this device only.</string>
+
+    <!-- Budget review dialog (prototype dlgBudget) -->
+    <string name="core_ui_budget_dialog_title">Save this budget?</string>
+    <string name="core_ui_budget_dialog_subtitle">%1$s · stored on this device</string>
+    <string name="core_ui_budget_dialog_over">This budget is over your income. You can still save it on purpose.</string>
+    <string name="core_ui_budget_dialog_back">Go back</string>
+    <string name="core_ui_budget_dialog_confirm">Confirm and save</string>
+
+    <!-- Model status header and file facts (prototype mdlTitle, showFile block) -->
+    <string name="core_ui_model_status_kicker">Model status</string>
+    <string name="core_ui_model_status_not_downloaded">Not downloaded</string>
+    <string name="core_ui_model_status_ready_to_download">Ready to download</string>
+    <string name="core_ui_model_status_downloading">Downloading</string>
+    <string name="core_ui_model_status_verifying">Verifying file</string>
+    <string name="core_ui_model_status_ready">Ready on this device</string>
+    <string name="core_ui_model_status_failed">Download failed</string>
+    <string name="core_ui_model_status_unsupported">Not supported on this device</string>
+    <string name="core_ui_model_facts_model_label">Model</string>
+    <string name="core_ui_model_facts_model_name">Compact assistant model</string>
+    <string name="core_ui_model_facts_download_label">Download size</string>
+    <string name="core_ui_model_facts_download_value">≈ 600 MB</string>
+    <string name="core_ui_model_facts_space_label">Free space needed</string>
+    <string name="core_ui_model_facts_space_value">≈ 1.2 GB</string>
+    <string name="core_ui_model_facts_illustrative">illustrative</string>
+    <string name="core_ui_model_facts_footnote">Placeholder figures for this prototype, not measured values. Wi-Fi recommended.</string>
+</resources>

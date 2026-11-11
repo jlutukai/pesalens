@@ -1,4 +1,5 @@
 pluginManagement {
+    includeBuild("build-logic")
     repositories {
         google {
             content {
@@ -22,5 +23,23 @@ dependencyResolutionManagement {
     }
 }
 
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
 rootProject.name = "pesalens"
+
 include(":app")
+
+include(
+    ":core:model",
+    ":core:common",
+    ":core:domain",
+    ":core:designsystem",
+    ":core:ui",
+    ":core:navigation",
+    ":core:data",
+    ":core:testing",
+)
+
+listOf("onboarding", "applock", "assistant", "transactions", "settings", "modelsetup").forEach { feature ->
+    include(":feature:$feature:api", ":feature:$feature:impl")
+}

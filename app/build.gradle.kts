@@ -1,21 +1,14 @@
 plugins {
-    alias(libs.plugins.android.application)
+    id("pesalens.android.application.compose")
+    id("pesalens.koin")
+    id("pesalens.roborazzi")
 }
 
 android {
-    namespace = "lutukai.pesalens.app"
-    compileSdk {
-        version = release(37)
-    }
-
     defaultConfig {
         applicationId = "lutukai.pesalens.app"
-        minSdk = 24
-        targetSdk = 37
         versionCode = 1
         versionName = "1.0"
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -26,17 +19,35 @@ android {
             }
         }
     }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
 }
 
 dependencies {
-    implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.material)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(libs.androidx.junit)
+    implementation(projects.feature.onboarding.api)
+    implementation(projects.feature.onboarding.impl)
+    implementation(projects.feature.applock.api)
+    implementation(projects.feature.applock.impl)
+    implementation(projects.feature.assistant.api)
+    implementation(projects.feature.assistant.impl)
+    implementation(projects.feature.transactions.api)
+    implementation(projects.feature.transactions.impl)
+    implementation(projects.feature.settings.api)
+    implementation(projects.feature.settings.impl)
+    implementation(projects.feature.modelsetup.api)
+    implementation(projects.feature.modelsetup.impl)
+
+    implementation(projects.core.data)
+    implementation(projects.core.domain)
+    implementation(projects.core.navigation)
+    implementation(projects.core.ui)
+
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.lifecycle.process)
+    implementation(libs.androidx.biometric)
+    implementation(libs.koin.compose)
+    implementation(libs.koin.compose.navigation3)
+
+    // junit, kotlin-test-junit, robolectric and ui-test-junit4 come from pesalens.android.application.compose;
+    // the roborazzi libraries from pesalens.roborazzi.
+    testImplementation(projects.core.testing)
+    testImplementation(libs.koin.test)
 }

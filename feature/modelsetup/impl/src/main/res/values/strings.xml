@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="model_title">On-device AI</string>
+    <string name="model_back">Back</string>
+
+    <string name="model_not_downloaded_intro">Download a small language model so PesaLens can understand questions in your own words. It\'s optional — cloud AI keeps working without it.</string>
+    <string name="model_fact_runs_here">The model is downloaded to this phone and runs here.</string>
+    <string name="model_fact_offline">Once set up, supported features work offline.</string>
+    <string name="model_fact_compatibility">Compatibility and speed depend on your device. We\'ll check before downloading.</string>
+    <string name="model_fact_storage">The download needs internet and free storage.</string>
+    <string name="model_check_device">Check this device</string>
+    <string name="model_use_cloud_instead">Use cloud AI instead</string>
+
+    <string name="model_ready_to_download_body">This device passed the basic check. Performance still varies, so you can switch back to cloud AI if the model runs slowly.</string>
+    <string name="model_download">Download model</string>
+    <string name="model_not_now">Not now</string>
+
+    <string name="model_progress_description">Model download</string>
+    <string name="model_progress_downloading">Downloading over the internet…</string>
+    <string name="model_progress_verifying">Checking the file against a trusted checksum…</string>
+    <string name="model_progress_percent">%1$d%%</string>
+    <string name="model_progress_body">You can keep using cloud AI while this runs. After downloading, the file is checked against a trusted checksum.</string>
+    <string name="model_cancel_download">Cancel download</string>
+
+    <string name="model_ready_body">The model is downloaded, verified and ready. Supported questions will be interpreted on this phone, offline.</string>
+    <string name="model_switch_on_device">Switch to on-device AI</string>
+    <string name="model_delete">Delete model</string>
+
+    <string name="model_failed_alert">The download stopped at %1$d%% because the connection dropped. The partial file was removed.</string>
+    <string name="model_failed_body">Check your connection and free storage, then try again. Cloud AI is still available.</string>
+    <string name="model_retry">Retry download</string>
+    <string name="model_use_cloud">Use cloud AI</string>
+
+    <string name="model_unsupported_body">This device can\'t run the on-device model reliably — it may need more memory or a newer runtime. Nothing was downloaded.</string>
+    <string name="model_unsupported_note">Every flow in PesaLens still works with cloud AI, using the same app-computed figures. Only your question and category totals are sent.</string>
+    <string name="model_continue_cloud">Continue with cloud AI</string>
+
+    <string name="model_message_on_device">Switched to on-device AI.</string>
+    <string name="model_message_cancelled">Download cancelled. The partial file was removed.</string>
+    <string name="model_message_deleted">Model deleted. Switched to cloud AI.</string>
+    <!-- not in prototype -->
+    <string name="model_message_unavailable">Model download isn\'t available in this build yet.</string>
+</resources>
